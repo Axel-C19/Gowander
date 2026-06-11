@@ -6,7 +6,8 @@ import type { Itinerary } from '@gowander/shared-types';
 export interface GenerateRequest {
     swipe_session_id: string;
     destination_id: string;
-    date?: string;
+    start_date?: string;
+    end_date?: string;
     start_time?: string;
 }
 
@@ -32,7 +33,8 @@ export function useGenerateItinerary() {
             itineraryService.generate({
                 swipe_session_id: req.swipe_session_id,
                 destination_id: req.destination_id,
-                date: req.date,
+                start_date: req.start_date,
+                end_date: req.end_date,
                 start_time: req.start_time ?? '09:00',
             }),
         onSuccess: (itinerary: Itinerary) => {

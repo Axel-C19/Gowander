@@ -16,7 +16,8 @@ def generate(body: GenerateItineraryRequest, current_user: CurrentUser, db: DB):
             user_id=current_user.id,
             swipe_session_id=body.swipe_session_id,
             destination_id=body.destination_id,
-            itinerary_date=body.date,
+            start_date=body.start_date,
+            end_date=body.end_date,
             start_time_str=body.start_time,
         )
     except ValueError as exc:

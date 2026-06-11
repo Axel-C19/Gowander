@@ -11,9 +11,10 @@ from .destination import DestinationOut
 class GenerateItineraryRequest(BaseModel):
     swipe_session_id: uuid.UUID
     destination_id: uuid.UUID
-    # NOTE: field named "date" must not use the bare `date` type — the field
-    # name shadows it during model build and Pydantic resolves the type as None.
-    date: Optional[dt.date] = None
+    # NOTE: fields holding dates must not use the bare `date` type when a field
+    # is named "date" — the name shadows it during model build.
+    start_date: Optional[dt.date] = None
+    end_date: Optional[dt.date] = None
     start_time: str = "09:00"
 
 
@@ -21,6 +22,7 @@ class ItineraryStopOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     order: int
+    day: int = 1
     place: PlaceOut
     arrival_time: Optional[str] = None
     departure_time: Optional[str] = None
@@ -35,6 +37,7 @@ class ItineraryOut(BaseModel):
     title: str
     destination: DestinationOut
     date: Optional[dt.date] = None
+    end_date: Optional[dt.date] = None
     start_time: Optional[str] = None
     total_duration_minutes: int
     is_saved: bool = False

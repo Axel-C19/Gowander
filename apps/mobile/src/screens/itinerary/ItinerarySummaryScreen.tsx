@@ -19,7 +19,7 @@ import { formatTime, formatDuration, categoryLabel } from '@gowander/shared-util
 export function ItinerarySummaryScreen() {
     const route = useRoute<ItinerarySummaryRouteProp>();
     const navigation = useNavigation<AppScreenNavigationProp>();
-    const { destination, swipeSessionId, date } = route.params;
+    const { destination, swipeSessionId, startDate, endDate } = route.params;
 
     const generateItinerary = useGenerateItinerary();
     const saveItinerary = useSaveItinerary();
@@ -35,7 +35,8 @@ export function ItinerarySummaryScreen() {
             const result = await generateItinerary.mutateAsync({
                 swipe_session_id: swipeSessionId,
                 destination_id: String(destination.id),
-                date,
+                start_date: startDate,
+                end_date: endDate,
                 start_time: '09:00',
             });
             setItinerary(result);
@@ -84,9 +85,25 @@ export function ItinerarySummaryScreen() {
                 </Text>
             </View>
 
-            {/* Stops */}
+            {/* Stops, grouped by trip day */}
             {itinerary.stops.map((stop, index) => (
-                <View key={String(stop.place.id)} style={styles.stopCard}>
+                <View key={`${stop.place.id}-${index}`}>
+                    {(index === 0 || stop.day !== itinerary.stops[index - 1].day) && (
+                        <Text style={styles.dayHeader}>
+                            Day {stop.day}
+                            {itinerary.date
+                                ? ` — ${new Date(
+                                      new Date(itinerary.date + 'T00:00:00').getTime() +
+                                          (stop.day - 1) * 86_400_000,
+                                  ).toLocaleDateString(undefined, {
+                                      weekday: 'long',
+                                      month: 'short',
+                                      day: 'numeric',
+                                  })}`
+                                : ''}
+                        </Text>
+                    )}
+                <View style={styles.stopCard}>
                     {/* Timeline dot */}
                     <View style={styles.timeline}>
                         <View style={styles.timelineDot} />
@@ -125,6 +142,7 @@ export function ItinerarySummaryScreen() {
                             </View>
                         )}
                     </View>
+                </View>
                 </View>
             ))}
 
@@ -210,6 +228,13 @@ const styles = StyleSheet.create({
     stopCard: {
         flexDirection: 'row',
         marginBottom: SPACING.md,
+    },
+    dayHeader: {
+        fontSize: FONT_SIZE.md,
+        fontWeight: '700',
+        color: COLORS.primary,
+        marginBottom: SPACING.sm,
+        marginTop: SPACING.xs,
     },
     timeline: {
         width: 24,

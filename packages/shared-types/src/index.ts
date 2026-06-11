@@ -95,7 +95,8 @@ export interface Itinerary {
   id: string;
   title: string;
   destination: Destination;
-  date: string;           // ISO date "2025-06-01"
+  date: string;           // Trip start date, ISO "2025-06-01"
+  end_date: string | null; // Trip end date
   start_time: string;     // "09:00"
   total_duration_minutes: number;
   is_saved: boolean;
@@ -106,6 +107,7 @@ export interface Itinerary {
 
 export interface ItineraryStop {
   order: number;
+  day: number;            // 1-based trip day
   place: PlaceCard;
   arrival_time: string;    // "10:30"
   departure_time: string;  // "12:00"

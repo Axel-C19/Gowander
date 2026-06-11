@@ -8,7 +8,12 @@
       "Bash(python3 -)",
       "Bash(make db-seed *)",
       "Bash(make -C ../.. db-seed)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(git commit -m 'Initial commit: GoWander MVP — auth, preferences, swipe deck, itinerary engine, maps, saved trips *)",
+      "Bash(git branch *)",
+      "Bash(git remote *)",
+      "Bash(git push *)",
+      "Bash(PYTHONPATH=. .venv/bin/python -m app.db.seed)"
     ]
   }
 }

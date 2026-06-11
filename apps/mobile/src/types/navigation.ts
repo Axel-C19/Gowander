@@ -21,12 +21,14 @@ export type AppStackParamList = {
     };
     SwipeDeck: {
         destination: Destination;
-        date: string; // ISO "YYYY-MM-DD" travel date
+        startDate: string; // ISO "YYYY-MM-DD"
+        endDate: string;
     };
     ItinerarySummary: {
         swipeSessionId: string;
         destination: Destination;
-        date: string;
+        startDate: string;
+        endDate: string;
     };
     MapView: {
         itinerary: Itinerary;

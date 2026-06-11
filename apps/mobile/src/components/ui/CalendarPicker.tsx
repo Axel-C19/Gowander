@@ -6,6 +6,9 @@ interface CalendarPickerProps {
   /** Called with ISO date string "YYYY-MM-DD" when a day is selected. */
   onSelectDate: (isoDate: string) => void;
   selectedDate?: string | null;
+  /** Range mode: highlight every day between start and end (inclusive). */
+  rangeStart?: string | null;
+  rangeEnd?: string | null;
 }
 
 const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -21,7 +24,12 @@ function startOfDay(d: Date): Date {
   return new Date(d.getFullYear(), d.getMonth(), d.getDate());
 }
 
-export function CalendarPicker({ onSelectDate, selectedDate }: CalendarPickerProps) {
+export function CalendarPicker({
+  onSelectDate,
+  selectedDate,
+  rangeStart,
+  rangeEnd,
+}: CalendarPickerProps) {
   const today = startOfDay(new Date());
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -102,7 +110,10 @@ export function CalendarPicker({ onSelectDate, selectedDate }: CalendarPickerPro
           const iso = toISODate(cellDate);
           const isPast = cellDate < today;
           const isToday = cellDate.getTime() === today.getTime();
-          const isSelected = selectedDate === iso;
+          const isEndpoint =
+            selectedDate === iso || rangeStart === iso || rangeEnd === iso;
+          const isInRange =
+            !!rangeStart && !!rangeEnd && iso > rangeStart && iso < rangeEnd;
 
           return (
             <TouchableOpacity
@@ -110,7 +121,8 @@ export function CalendarPicker({ onSelectDate, selectedDate }: CalendarPickerPro
               style={[
                 styles.dayCell,
                 isToday && styles.todayCell,
-                isSelected && styles.selectedCell,
+                isInRange && styles.inRangeCell,
+                isEndpoint && styles.selectedCell,
               ]}
               disabled={isPast}
               onPress={() => onSelectDate(iso)}
@@ -120,7 +132,8 @@ export function CalendarPicker({ onSelectDate, selectedDate }: CalendarPickerPro
                 style={[
                   styles.dayText,
                   isPast && styles.pastDayText,
-                  isSelected && styles.selectedDayText,
+                  isInRange && styles.inRangeDayText,
+                  isEndpoint && styles.selectedDayText,
                 ]}
               >
                 {day}
@@ -195,6 +208,14 @@ const styles = StyleSheet.create({
   },
   selectedCell: {
     backgroundColor: COLORS.primary,
+  },
+  inRangeCell: {
+    backgroundColor: `${COLORS.primary}26`,   // primary at ~15% opacity
+    borderRadius: 0,
+  },
+  inRangeDayText: {
+    color: COLORS.primary,
+    fontWeight: '600',
   },
   dayText: {
     fontSize: FONT_SIZE.sm,

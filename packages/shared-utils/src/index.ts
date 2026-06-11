@@ -77,3 +77,28 @@ export function isPlaceOpenOn(
   if (!dayData) return true;
   return !dayData.closed;
 }
+
+/**
+ * Whether a place is open on at least one day of the trip range (inclusive).
+ * A place is only "unavailable" if it's closed on EVERY day of the trip.
+ */
+export function isPlaceOpenInRange(
+  openingHours: import('@gowander/shared-types').OpeningHours | null | undefined,
+  startISO: string,
+  endISO: string,
+): boolean {
+  const [sy, sm, sd] = startISO.split('-').map(Number);
+  const [ey, em, ed] = endISO.split('-').map(Number);
+  const cursor = new Date(sy, sm - 1, sd);
+  const end = new Date(ey, em - 1, ed);
+  let checked = 0;
+  while (cursor <= end && checked < 7) {   // 7 days covers every weekday
+    const y = cursor.getFullYear();
+    const m = String(cursor.getMonth() + 1).padStart(2, '0');
+    const d = String(cursor.getDate()).padStart(2, '0');
+    if (isPlaceOpenOn(openingHours, `${y}-${m}-${d}`)) return true;
+    cursor.setDate(cursor.getDate() + 1);
+    checked += 1;
+  }
+  return false;
+}

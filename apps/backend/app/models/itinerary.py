@@ -12,7 +12,8 @@ class Itinerary(Base, UUIDMixin, TimestampMixin):
     swipe_session_id = Column(UUID(as_uuid=True), ForeignKey("swipe_sessions.id"), nullable=True)
 
     title = Column(String(255), nullable=False)
-    date = Column(Date, nullable=True)
+    date = Column(Date, nullable=True)           # Trip start date
+    end_date = Column(Date, nullable=True)       # Trip end date (same as date for 1-day trips)
     start_time = Column(String(5), nullable=True)   # "09:00"
     total_duration_minutes = Column(Integer, default=0, nullable=False)
     # Generated itineraries start unsaved; the user explicitly saves to keep them
@@ -36,6 +37,7 @@ class ItineraryStop(Base, UUIDMixin, TimestampMixin):
     place_id = Column(UUID(as_uuid=True), ForeignKey("places.id"), nullable=False)
 
     order = Column(Integer, nullable=False)
+    day = Column(Integer, default=1, nullable=False)    # 1-based trip day
     arrival_time = Column(String(5), nullable=True)     # "10:30"
     departure_time = Column(String(5), nullable=True)   # "12:00"
     travel_time_to_next_minutes = Column(Integer, default=0, nullable=False)

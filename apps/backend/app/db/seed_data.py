@@ -1,0 +1,443 @@
+"""
+Seed catalogue: the 50 most-visited tourist cities with their signature places.
+
+Format is compact on purpose:
+  CITIES: (name, city, country, country_code, lat, lon)
+  PLACES[city]: (name, description, category, rating, lat, lon, minutes, hours, img_query)
+
+`hours` is one of:
+  "always"            → always open
+  ("09:00", "18:00")  → same hours all week
+  ("09:00", "18:00", ["monday"]) → same hours, closed on listed days
+"""
+
+WEEKDAYS = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]
+
+
+def expand_hours(spec):
+    if spec == "always":
+        return {"always_open": True}
+    open_t, close_t = spec[0], spec[1]
+    closed_days = spec[2] if len(spec) > 2 else []
+    return {
+        day: ({"closed": True} if day in closed_days else {"open": open_t, "close": close_t})
+        for day in WEEKDAYS
+    }
+
+
+def img(query: str) -> str:
+    return f"https://loremflickr.com/600/400/{query}"
+
+
+CITIES = [
+    ("Bangkok, Thailand", "Bangkok", "Thailand", "TH", 13.7563, 100.5018),
+    ("Paris, France", "Paris", "France", "FR", 48.8566, 2.3522),
+    ("London, United Kingdom", "London", "United Kingdom", "GB", 51.5074, -0.1278),
+    ("Dubai, UAE", "Dubai", "United Arab Emirates", "AE", 25.2048, 55.2708),
+    ("Singapore", "Singapore", "Singapore", "SG", 1.3521, 103.8198),
+    ("Kuala Lumpur, Malaysia", "Kuala Lumpur", "Malaysia", "MY", 3.1390, 101.6869),
+    ("New York, USA", "New York", "United States", "US", 40.7128, -74.0060),
+    ("Istanbul, Turkey", "Istanbul", "Turkey", "TR", 41.0082, 28.9784),
+    ("Tokyo, Japan", "Tokyo", "Japan", "JP", 35.6762, 139.6503),
+    ("Antalya, Turkey", "Antalya", "Turkey", "TR", 36.8969, 30.7133),
+    ("Seoul, South Korea", "Seoul", "South Korea", "KR", 37.5665, 126.9780),
+    ("Osaka, Japan", "Osaka", "Japan", "JP", 34.6937, 135.5023),
+    ("Makkah, Saudi Arabia", "Makkah", "Saudi Arabia", "SA", 21.3891, 39.8579),
+    ("Phuket, Thailand", "Phuket", "Thailand", "TH", 7.8804, 98.3923),
+    ("Pattaya, Thailand", "Pattaya", "Thailand", "TH", 12.9236, 100.8825),
+    ("Milan, Italy", "Milan", "Italy", "IT", 45.4642, 9.1900),
+    ("Barcelona, Spain", "Barcelona", "Spain", "ES", 41.3851, 2.1734),
+    ("Hong Kong", "Hong Kong", "Hong Kong", "HK", 22.3193, 114.1694),
+    ("Palma de Mallorca, Spain", "Palma de Mallorca", "Spain", "ES", 39.5696, 2.6502),
+    ("Bali, Indonesia", "Bali", "Indonesia", "ID", -8.4095, 115.1889),
+    ("Rome, Italy", "Rome", "Italy", "IT", 41.9028, 12.4964),
+    ("Amsterdam, Netherlands", "Amsterdam", "Netherlands", "NL", 52.3676, 4.9041),
+    ("Vienna, Austria", "Vienna", "Austria", "AT", 48.2082, 16.3738),
+    ("Shanghai, China", "Shanghai", "China", "CN", 31.2304, 121.4737),
+    ("Prague, Czech Republic", "Prague", "Czech Republic", "CZ", 50.0755, 14.4378),
+    ("Los Angeles, USA", "Los Angeles", "United States", "US", 34.0522, -118.2437),
+    ("Madrid, Spain", "Madrid", "Spain", "ES", 40.4168, -3.7038),
+    ("Munich, Germany", "Munich", "Germany", "DE", 48.1351, 11.5820),
+    ("Berlin, Germany", "Berlin", "Germany", "DE", 52.5200, 13.4050),
+    ("Cancún, Mexico", "Cancún", "Mexico", "MX", 21.1619, -86.8515),
+    ("Mexico City, Mexico", "Mexico City", "Mexico", "MX", 19.4326, -99.1332),
+    ("Las Vegas, USA", "Las Vegas", "United States", "US", 36.1699, -115.1398),
+    ("Miami, USA", "Miami", "United States", "US", 25.7617, -80.1918),
+    ("Orlando, USA", "Orlando", "United States", "US", 28.5383, -81.3792),
+    ("San Francisco, USA", "San Francisco", "United States", "US", 37.7749, -122.4194),
+    ("Lisbon, Portugal", "Lisbon", "Portugal", "PT", 38.7223, -9.1393),
+    ("Venice, Italy", "Venice", "Italy", "IT", 45.4408, 12.3155),
+    ("Florence, Italy", "Florence", "Italy", "IT", 43.7696, 11.2558),
+    ("Athens, Greece", "Athens", "Greece", "GR", 37.9838, 23.7275),
+    ("Budapest, Hungary", "Budapest", "Hungary", "HU", 47.4979, 19.0402),
+    ("Dublin, Ireland", "Dublin", "Ireland", "IE", 53.3498, -6.2603),
+    ("Sydney, Australia", "Sydney", "Australia", "AU", -33.8688, 151.2093),
+    ("Rio de Janeiro, Brazil", "Rio de Janeiro", "Brazil", "BR", -22.9068, -43.1729),
+    ("Buenos Aires, Argentina", "Buenos Aires", "Argentina", "AR", -34.6037, -58.3816),
+    ("Cairo, Egypt", "Cairo", "Egypt", "EG", 30.0444, 31.2357),
+    ("Marrakech, Morocco", "Marrakech", "Morocco", "MA", 31.6295, -7.9811),
+    ("Cape Town, South Africa", "Cape Town", "South Africa", "ZA", -33.9249, 18.4241),
+    ("Toronto, Canada", "Toronto", "Canada", "CA", 43.6532, -79.3832),
+    ("Vancouver, Canada", "Vancouver", "Canada", "CA", 49.2827, -123.1207),
+    ("Copenhagen, Denmark", "Copenhagen", "Denmark", "DK", 55.6761, 12.5683),
+]
+
+# (name, description, category, rating, lat, lon, minutes, hours, img_query)
+PLACES = {
+    "Bangkok": [
+        ("Grand Palace", "Dazzling royal complex of golden spires and the Emerald Buddha.", "landmark", 4.7, 13.7500, 100.4915, 150, ("08:30", "15:30"), "grand,palace,bangkok"),
+        ("Wat Arun", "Temple of Dawn — riverside spire covered in porcelain mosaics.", "religious", 4.7, 13.7437, 100.4889, 90, ("08:00", "18:00"), "wat,arun"),
+        ("Chatuchak Market", "One of the world's largest weekend markets, 15,000 stalls.", "shopping", 4.5, 13.7999, 100.5502, 180, ("09:00", "18:00", ["monday", "tuesday", "wednesday", "thursday"]), "bangkok,market"),
+        ("Wat Pho", "Home of the giant Reclining Buddha and Thai massage school.", "religious", 4.7, 13.7465, 100.4928, 90, ("08:00", "18:30"), "wat,pho,buddha"),
+        ("Khao San Road", "Backpacker hub of street food, bars and nightlife.", "entertainment", 4.2, 13.7588, 100.4972, 120, "always", "khaosan,road"),
+    ],
+    "Paris": [
+        ("Eiffel Tower", "Iconic iron lattice tower on the Champ de Mars, symbol of Paris.", "landmark", 4.7, 48.8584, 2.2945, 120, ("09:00", "23:45"), "eiffel,tower"),
+        ("Louvre Museum", "World's largest art museum and home to the Mona Lisa.", "museum", 4.7, 48.8606, 2.3376, 180, ("09:00", "18:00", ["monday"]), "louvre"),
+        ("Notre-Dame Cathedral", "Medieval Catholic cathedral on the Île de la Cité.", "religious", 4.7, 48.8530, 2.3499, 60, "always", "notre,dame,paris"),
+        ("Musée d'Orsay", "Impressionist masterpieces in a former railway station.", "museum", 4.7, 48.8600, 2.3266, 150, ("09:30", "18:00", ["monday"]), "orsay,museum"),
+        ("Sacré-Cœur Basilica", "White basilica atop Montmartre with panoramic views.", "religious", 4.7, 48.8867, 2.3431, 60, "always", "sacre,coeur"),
+        ("Champs-Élysées", "Legendary avenue for shopping from the Arc de Triomphe.", "shopping", 4.5, 48.8698, 2.3076, 120, "always", "champs,elysees"),
+    ],
+    "London": [
+        ("British Museum", "Two million years of human history — Rosetta Stone included.", "museum", 4.8, 51.5194, -0.1270, 180, ("10:00", "17:00"), "british,museum"),
+        ("Tower of London", "Historic castle guarding the Crown Jewels.", "landmark", 4.6, 51.5081, -0.0759, 150, ("09:00", "17:30"), "tower,of,london"),
+        ("Buckingham Palace", "The monarch's residence — catch the Changing of the Guard.", "landmark", 4.5, 51.5014, -0.1419, 90, ("09:30", "17:00"), "buckingham,palace"),
+        ("London Eye", "Giant riverside observation wheel with city panoramas.", "viewpoint", 4.5, 51.5033, -0.1196, 60, ("10:00", "20:30"), "london,eye"),
+        ("Westminster Abbey", "Gothic abbey of coronations and royal weddings.", "religious", 4.6, 51.4993, -0.1273, 90, ("09:30", "15:30", ["sunday"]), "westminster,abbey"),
+        ("Camden Market", "Eclectic stalls, street food and alternative fashion.", "shopping", 4.4, 51.5414, -0.1460, 120, ("10:00", "18:00"), "camden,market"),
+    ],
+    "Dubai": [
+        ("Burj Khalifa", "World's tallest building with observation decks at 555 m.", "viewpoint", 4.7, 25.1972, 55.2744, 120, ("09:00", "23:00"), "burj,khalifa"),
+        ("Dubai Mall", "Colossal mall with an aquarium and dancing fountains.", "shopping", 4.6, 25.1985, 55.2796, 180, ("10:00", "23:00"), "dubai,mall"),
+        ("Palm Jumeirah", "Iconic palm-shaped artificial island with beach resorts.", "beach", 4.5, 25.1124, 55.1390, 150, "always", "palm,jumeirah"),
+        ("Dubai Marina", "Glittering waterfront promenade lined with skyscrapers.", "viewpoint", 4.5, 25.0805, 55.1403, 90, "always", "dubai,marina"),
+        ("Gold Souk", "Traditional market dazzling with gold and spices.", "shopping", 4.3, 25.2867, 55.2962, 90, ("10:00", "22:00"), "gold,souk,dubai"),
+    ],
+    "Singapore": [
+        ("Gardens by the Bay", "Futuristic Supertree Grove and cooled conservatories.", "park", 4.7, 1.2816, 103.8636, 150, ("05:00", "02:00"), "gardens,by,the,bay"),
+        ("Marina Bay Sands SkyPark", "Boat-shaped rooftop with infinity views of the bay.", "viewpoint", 4.6, 1.2834, 103.8607, 90, ("11:00", "21:00"), "marina,bay,sands"),
+        ("Sentosa Island", "Resort island of beaches, attractions and cable cars.", "beach", 4.5, 1.2494, 103.8303, 240, "always", "sentosa"),
+        ("Chinatown", "Heritage shophouses, temples and hawker food.", "other", 4.4, 1.2838, 103.8443, 120, "always", "singapore,chinatown"),
+        ("Singapore Zoo", "World-renowned rainforest zoo with open enclosures.", "entertainment", 4.6, 1.4043, 103.7930, 210, ("08:30", "18:00"), "singapore,zoo"),
+    ],
+    "Kuala Lumpur": [
+        ("Petronas Towers", "Iconic twin towers connected by a double-deck skybridge.", "landmark", 4.6, 3.1579, 101.7116, 90, ("09:00", "21:00", ["monday"]), "petronas,towers"),
+        ("Batu Caves", "Hindu shrine in limestone caves behind a giant golden statue.", "religious", 4.5, 3.2379, 101.6840, 120, ("06:00", "21:00"), "batu,caves"),
+        ("KL Tower", "Communications tower with an observation deck above the jungle.", "viewpoint", 4.4, 3.1528, 101.7038, 75, ("09:00", "22:00"), "kl,tower"),
+        ("Central Market", "Art-deco hall of Malaysian crafts and batik.", "shopping", 4.3, 3.1457, 101.6958, 90, ("10:00", "21:00"), "central,market,kuala,lumpur"),
+        ("Merdeka Square", "Historic independence square framed by colonial buildings.", "landmark", 4.4, 3.1478, 101.6938, 60, "always", "merdeka,square"),
+    ],
+    "New York": [
+        ("Statue of Liberty", "Lady Liberty on her island — ferry from Battery Park.", "landmark", 4.7, 40.6892, -74.0445, 180, ("09:00", "17:00"), "statue,of,liberty"),
+        ("Central Park", "843 acres of lawns, lakes and woodland in Manhattan.", "park", 4.8, 40.7829, -73.9654, 150, ("06:00", "23:00"), "central,park"),
+        ("Metropolitan Museum of Art", "Five thousand years of art on Museum Mile.", "museum", 4.8, 40.7794, -73.9632, 180, ("10:00", "17:00", ["wednesday"]), "metropolitan,museum"),
+        ("Times Square", "Neon heart of Manhattan — theaters and billboards.", "entertainment", 4.4, 40.7580, -73.9855, 60, "always", "times,square"),
+        ("Brooklyn Bridge", "Walk the wooden promenade of the 1883 suspension icon.", "landmark", 4.7, 40.7061, -73.9969, 75, "always", "brooklyn,bridge"),
+        ("Empire State Building", "Art-deco classic with 86th-floor observatory.", "viewpoint", 4.7, 40.7484, -73.9857, 90, ("09:00", "23:00"), "empire,state"),
+    ],
+    "Istanbul": [
+        ("Hagia Sophia", "Byzantine marvel — basilica, mosque and museum across 1,500 years.", "religious", 4.7, 41.0086, 28.9802, 90, ("09:00", "19:00"), "hagia,sophia"),
+        ("Blue Mosque", "Six minarets and a cascade of domes lined with İznik tiles.", "religious", 4.7, 41.0054, 28.9768, 60, ("08:30", "18:00"), "blue,mosque"),
+        ("Grand Bazaar", "One of the oldest covered markets — 4,000 shops.", "shopping", 4.5, 41.0108, 28.9680, 150, ("09:00", "19:00", ["sunday"]), "grand,bazaar"),
+        ("Topkapi Palace", "Ottoman sultans' palace with harem and treasury.", "museum", 4.6, 41.0115, 28.9834, 150, ("09:00", "18:00", ["tuesday"]), "topkapi,palace"),
+        ("Galata Tower", "Medieval stone tower with 360° views over the Bosphorus.", "viewpoint", 4.5, 41.0256, 28.9744, 60, ("08:30", "23:00"), "galata,tower"),
+    ],
+    "Tokyo": [
+        ("Senso-ji Temple", "Tokyo's oldest temple behind the Thunder Gate lantern.", "religious", 4.6, 35.7148, 139.7967, 90, ("06:00", "17:00"), "sensoji"),
+        ("Shibuya Crossing", "The world's busiest pedestrian scramble.", "landmark", 4.5, 35.6595, 139.7005, 45, "always", "shibuya,crossing"),
+        ("Tokyo Skytree", "634 m broadcasting tower with twin observation decks.", "viewpoint", 4.5, 35.7101, 139.8107, 90, ("10:00", "21:00"), "tokyo,skytree"),
+        ("Meiji Shrine", "Forested Shinto shrine dedicated to Emperor Meiji.", "religious", 4.6, 35.6764, 139.6993, 75, ("05:00", "18:00"), "meiji,shrine"),
+        ("Tsukiji Outer Market", "Street-food paradise of fresh sushi and knives.", "restaurant", 4.5, 35.6654, 139.7707, 90, ("05:00", "14:00", ["sunday"]), "tsukiji,market"),
+        ("teamLab Planets", "Immersive digital art museum you wade through.", "entertainment", 4.6, 35.6494, 139.7898, 120, ("09:00", "22:00"), "teamlab"),
+    ],
+    "Antalya": [
+        ("Kaleiçi Old Town", "Ottoman-era quarter wrapped around a Roman harbour.", "landmark", 4.6, 36.8841, 30.7056, 120, "always", "antalya,old,town"),
+        ("Düden Waterfalls", "Twin falls — one plunging straight into the Mediterranean.", "park", 4.6, 36.9482, 30.7311, 90, ("08:00", "19:00"), "duden,waterfalls"),
+        ("Hadrian's Gate", "Triple-arched Roman gate built for Emperor Hadrian in 130 AD.", "landmark", 4.5, 36.8854, 30.7074, 30, "always", "hadrians,gate"),
+        ("Konyaaltı Beach", "Pebble beach stretching beneath the Taurus mountains.", "beach", 4.5, 36.8625, 30.6433, 180, "always", "antalya,beach"),
+        ("Antalya Museum", "One of Turkey's richest archaeology collections.", "museum", 4.6, 36.8855, 30.6802, 120, ("08:30", "17:30", ["monday"]), "antalya,museum"),
+    ],
+    "Seoul": [
+        ("Gyeongbokgung Palace", "Grand Joseon palace with changing-of-the-guard ceremony.", "landmark", 4.6, 37.5796, 126.9770, 120, ("09:00", "18:00", ["tuesday"]), "gyeongbokgung"),
+        ("Bukchon Hanok Village", "Hillside lanes of traditional Korean houses.", "other", 4.4, 37.5826, 126.9831, 90, ("09:00", "18:00"), "bukchon,hanok"),
+        ("Myeongdong", "Neon shopping district famous for cosmetics and street food.", "shopping", 4.4, 37.5637, 126.9838, 120, ("10:00", "22:00"), "myeongdong"),
+        ("N Seoul Tower", "Hilltop tower with love locks and city views.", "viewpoint", 4.5, 37.5512, 126.9882, 90, ("10:00", "23:00"), "namsan,tower"),
+        ("Changdeokgung Secret Garden", "UNESCO palace garden of pavilions and ponds.", "park", 4.6, 37.5826, 126.9910, 90, ("09:00", "17:00", ["monday"]), "changdeokgung"),
+    ],
+    "Osaka": [
+        ("Osaka Castle", "Moated samurai castle amid plum and cherry groves.", "landmark", 4.5, 34.6873, 135.5262, 120, ("09:00", "17:00"), "osaka,castle"),
+        ("Dotonbori", "Canal-side neon strip famous for the Glico Running Man.", "entertainment", 4.5, 34.6687, 135.5013, 120, "always", "dotonbori"),
+        ("Universal Studios Japan", "Hollywood thrills plus Super Nintendo World.", "entertainment", 4.5, 34.6654, 135.4323, 480, ("09:00", "21:00"), "universal,studios,japan"),
+        ("Kuromon Market", "Osaka's kitchen — 150 stalls of seafood and wagyu.", "restaurant", 4.4, 34.6657, 135.5063, 90, ("09:00", "18:00"), "kuromon,market"),
+        ("Umeda Sky Building", "Floating Garden Observatory bridging twin towers.", "viewpoint", 4.4, 34.7053, 135.4900, 75, ("09:30", "22:30"), "umeda,sky"),
+    ],
+    "Makkah": [
+        ("Masjid al-Haram", "Islam's holiest mosque surrounding the Kaaba.", "religious", 4.9, 21.4225, 39.8262, 240, "always", "masjid,haram"),
+        ("Abraj Al-Bait Clock Tower", "Skyline-defining clock tower beside the Grand Mosque.", "landmark", 4.6, 21.4187, 39.8256, 60, "always", "makkah,clock,tower"),
+        ("Jabal al-Nour", "Mountain of Light crowned by the Hira cave.", "viewpoint", 4.5, 21.4581, 39.8611, 180, "always", "jabal,nour"),
+        ("Makkah Mall", "Modern mall for cooling off between visits.", "shopping", 4.3, 21.3982, 39.8579, 120, ("10:00", "23:00"), "makkah,mall"),
+        ("Mina Valley", "Tent city valley on the pilgrimage route.", "other", 4.4, 21.4133, 39.8933, 90, "always", "mina,valley"),
+    ],
+    "Phuket": [
+        ("Patong Beach", "Phuket's liveliest beach and nightlife strip.", "beach", 4.3, 7.8965, 98.2965, 240, "always", "patong,beach"),
+        ("Big Buddha", "45 m white-marble Buddha gazing over the island.", "religious", 4.6, 7.8277, 98.3128, 90, ("06:00", "19:00"), "big,buddha,phuket"),
+        ("Old Phuket Town", "Sino-Portuguese shophouses in candy colours.", "other", 4.5, 7.8847, 98.3875, 120, "always", "phuket,old,town"),
+        ("Wat Chalong", "The island's grandest and most revered temple.", "religious", 4.5, 7.8467, 98.3378, 75, ("07:00", "17:00"), "wat,chalong"),
+        ("Karon Viewpoint", "Classic three-bays panorama of the west coast.", "viewpoint", 4.5, 7.7858, 98.3045, 45, "always", "phuket,viewpoint"),
+    ],
+    "Pattaya": [
+        ("Sanctuary of Truth", "All-wood temple carved with Hindu-Buddhist mythology.", "religious", 4.6, 12.9716, 100.8896, 120, ("08:00", "18:00"), "sanctuary,of,truth"),
+        ("Walking Street", "Famous neon nightlife strip by the bay.", "entertainment", 4.2, 12.9259, 100.8703, 120, "always", "pattaya,walking,street"),
+        ("Nong Nooch Garden", "Vast tropical garden with elephant shows.", "park", 4.5, 12.7641, 100.9357, 180, ("08:00", "18:00"), "nong,nooch"),
+        ("Koh Larn", "Coral island escape a short ferry from the bay.", "beach", 4.5, 12.9165, 100.7800, 300, "always", "koh,larn"),
+        ("Big Buddha Hill", "Golden Buddha overlooking Pattaya bay.", "viewpoint", 4.4, 12.9128, 100.8654, 60, ("07:00", "18:00"), "pattaya,big,buddha"),
+    ],
+    "Milan": [
+        ("Duomo di Milano", "Forest of marble spires — climb to the rooftop terraces.", "religious", 4.7, 45.4642, 9.1916, 120, ("08:00", "19:00"), "duomo,milano"),
+        ("Galleria Vittorio Emanuele II", "Glass-domed 19th-century shopping arcade.", "shopping", 4.6, 45.4659, 9.1900, 60, "always", "galleria,vittorio"),
+        ("The Last Supper", "Leonardo's fresco at Santa Maria delle Grazie (book ahead).", "museum", 4.7, 45.4660, 9.1709, 60, ("08:15", "19:00", ["monday"]), "last,supper,milan"),
+        ("Sforza Castle", "Renaissance fortress housing Michelangelo's last Pietà.", "landmark", 4.5, 45.4705, 9.1790, 120, ("07:00", "19:30"), "sforza,castle"),
+        ("Navigli District", "Canal quarter of aperitivo bars and vintage shops.", "entertainment", 4.4, 45.4504, 9.1700, 120, "always", "navigli"),
+    ],
+    "Barcelona": [
+        ("Sagrada Família", "Gaudí's still-rising basilica of light and stone.", "religious", 4.8, 41.4036, 2.1744, 120, ("09:00", "20:00"), "sagrada,familia"),
+        ("Park Güell", "Mosaic wonderland with views over the city.", "park", 4.6, 41.4145, 2.1527, 120, ("09:30", "19:30"), "park,guell"),
+        ("La Rambla", "Tree-lined promenade from Plaça Catalunya to the sea.", "other", 4.3, 41.3797, 2.1746, 90, "always", "la,rambla"),
+        ("Casa Batlló", "Gaudí's dragon-back house of bone-like balconies.", "landmark", 4.6, 41.3917, 2.1650, 90, ("09:00", "20:00"), "casa,batllo"),
+        ("Gothic Quarter", "Medieval maze of alleys around the cathedral.", "other", 4.6, 41.3833, 2.1760, 120, "always", "gothic,quarter,barcelona"),
+        ("Barceloneta Beach", "City beach with seafood chiringuitos.", "beach", 4.4, 41.3784, 2.1925, 180, "always", "barceloneta"),
+    ],
+    "Hong Kong": [
+        ("Victoria Peak", "Tram up to the classic skyline panorama.", "viewpoint", 4.6, 22.2759, 114.1455, 120, ("07:00", "24:00"), "victoria,peak"),
+        ("Tian Tan Big Buddha", "Bronze giant atop Lantau Island's Ngong Ping plateau.", "religious", 4.5, 22.2540, 113.9050, 150, ("10:00", "17:30"), "tian,tan,buddha"),
+        ("Star Ferry", "Century-old harbour crossing with skyline views.", "other", 4.6, 22.2939, 114.1683, 30, ("06:30", "23:30"), "star,ferry"),
+        ("Temple Street Night Market", "Lantern-lit stalls, fortune tellers and clay-pot rice.", "shopping", 4.3, 22.3048, 114.1700, 120, ("18:00", "23:00"), "temple,street,market"),
+        ("Wong Tai Sin Temple", "Taoist temple famed for answered prayers.", "religious", 4.4, 22.3420, 114.1933, 60, ("07:30", "16:30"), "wong,tai,sin"),
+    ],
+    "Palma de Mallorca": [
+        ("La Seu Cathedral", "Gothic cathedral glowing gold over the bay.", "religious", 4.7, 39.5674, 2.6480, 90, ("10:00", "17:15", ["sunday"]), "palma,cathedral"),
+        ("Bellver Castle", "Rare circular castle with island views.", "landmark", 4.5, 39.5636, 2.6190, 90, ("10:00", "18:00", ["monday"]), "bellver,castle"),
+        ("Old Town Palma", "Honey-stone lanes, patios and tapas bars.", "other", 4.6, 39.5712, 2.6494, 120, "always", "palma,old,town"),
+        ("Playa de Palma", "Six kilometres of Mediterranean sand.", "beach", 4.3, 39.5174, 2.7373, 240, "always", "playa,de,palma"),
+        ("Serra de Tramuntana", "UNESCO mountain range of olive terraces and villages.", "park", 4.8, 39.7167, 2.6333, 300, "always", "tramuntana"),
+    ],
+    "Bali": [
+        ("Tanah Lot Temple", "Sea temple silhouetted on a wave-battered rock.", "religious", 4.6, -8.6212, 115.0868, 90, ("07:00", "19:00"), "tanah,lot"),
+        ("Tegallalang Rice Terraces", "Emerald terraces carved into the Ubud hills.", "park", 4.5, -8.4312, 115.2777, 90, ("08:00", "18:00"), "tegallalang"),
+        ("Uluwatu Temple", "Clifftop temple with sunset kecak fire dance.", "religious", 4.6, -8.8291, 115.0849, 120, ("07:00", "19:00"), "uluwatu"),
+        ("Sacred Monkey Forest", "Ubud sanctuary of temples and long-tailed macaques.", "park", 4.4, -8.5194, 115.2587, 90, ("09:00", "18:00"), "monkey,forest,ubud"),
+        ("Seminyak Beach", "Golden sand, beach clubs and surf schools.", "beach", 4.4, -8.6913, 115.1571, 240, "always", "seminyak"),
+    ],
+    "Rome": [
+        ("Colosseum", "The Flavian Amphitheatre — gladiator arena of 50,000.", "landmark", 4.7, 41.8902, 12.4922, 150, ("08:30", "19:00"), "colosseum"),
+        ("Vatican Museums & Sistine Chapel", "Michelangelo's ceiling at the end of papal galleries.", "museum", 4.7, 41.9065, 12.4536, 210, ("08:00", "19:00", ["sunday"]), "vatican,museum"),
+        ("Trevi Fountain", "Baroque cascade — toss a coin to return to Rome.", "landmark", 4.7, 41.9009, 12.4833, 30, "always", "trevi,fountain"),
+        ("Pantheon", "Best-preserved Roman temple with its open oculus.", "landmark", 4.8, 41.8986, 12.4769, 60, ("09:00", "19:00"), "pantheon,rome"),
+        ("Roman Forum", "Ruined heart of the ancient Republic.", "landmark", 4.6, 41.8925, 12.4853, 120, ("08:30", "19:00"), "roman,forum"),
+        ("Trastevere", "Cobbled quarter of trattorias and ivy-clad lanes.", "restaurant", 4.6, 41.8896, 12.4694, 120, "always", "trastevere"),
+    ],
+    "Amsterdam": [
+        ("Rijksmuseum", "Rembrandt's Night Watch and the Dutch Golden Age.", "museum", 4.7, 52.3600, 4.8852, 180, ("09:00", "17:00"), "rijksmuseum"),
+        ("Anne Frank House", "The secret annex behind the canal house (book online).", "museum", 4.6, 52.3752, 4.8840, 90, ("09:00", "22:00"), "anne,frank,house"),
+        ("Van Gogh Museum", "World's largest Van Gogh collection.", "museum", 4.6, 52.3584, 4.8811, 120, ("09:00", "18:00"), "van,gogh,museum"),
+        ("Canal Cruise", "Glide under 17th-century bridges through the canal ring.", "other", 4.6, 52.3771, 4.8987, 75, ("09:00", "22:00"), "amsterdam,canal"),
+        ("Vondelpark", "The city's beloved green escape.", "park", 4.6, 52.3579, 4.8686, 90, "always", "vondelpark"),
+    ],
+    "Vienna": [
+        ("Schönbrunn Palace", "Habsburg summer palace with grand gardens.", "landmark", 4.7, 48.1845, 16.3122, 180, ("09:00", "17:00"), "schonbrunn"),
+        ("St. Stephen's Cathedral", "Gothic spire and patterned roof at the city's heart.", "religious", 4.7, 48.2085, 16.3731, 60, ("06:00", "22:00"), "stephansdom"),
+        ("Belvedere Palace", "Baroque palace housing Klimt's The Kiss.", "museum", 4.7, 48.1916, 16.3811, 120, ("09:00", "18:00"), "belvedere,vienna"),
+        ("Hofburg Palace", "Imperial winter residence and Spanish Riding School.", "landmark", 4.6, 48.2065, 16.3654, 120, ("09:00", "17:30"), "hofburg"),
+        ("Naschmarkt", "Mile-long market of spices, cheese and brunch cafés.", "restaurant", 4.4, 48.1986, 16.3637, 90, ("06:00", "21:00", ["sunday"]), "naschmarkt"),
+    ],
+    "Shanghai": [
+        ("The Bund", "Colonial riverfront facing Pudong's neon skyline.", "viewpoint", 4.7, 31.2400, 121.4905, 90, "always", "the,bund"),
+        ("Yu Garden", "Ming-dynasty garden of pavilions and koi ponds.", "park", 4.5, 31.2272, 121.4921, 90, ("08:45", "16:45", ["monday"]), "yu,garden"),
+        ("Shanghai Tower", "World's second-tallest building — 118th-floor deck.", "viewpoint", 4.6, 31.2336, 121.5055, 90, ("08:30", "22:00"), "shanghai,tower"),
+        ("Nanjing Road", "China's premier shopping street, neon after dark.", "shopping", 4.4, 31.2342, 121.4747, 120, "always", "nanjing,road"),
+        ("Tianzifang", "Lane-house maze of studios, bars and craft shops.", "other", 4.3, 31.2105, 121.4663, 90, ("10:00", "21:00"), "tianzifang"),
+    ],
+    "Prague": [
+        ("Charles Bridge", "Statue-lined medieval bridge over the Vltava.", "landmark", 4.7, 50.0865, 14.4114, 60, "always", "charles,bridge"),
+        ("Prague Castle", "Largest ancient castle complex in the world.", "landmark", 4.7, 50.0911, 14.4016, 180, ("06:00", "22:00"), "prague,castle"),
+        ("Old Town Square", "Astronomical Clock and pastel baroque facades.", "landmark", 4.7, 50.0875, 14.4213, 60, "always", "old,town,square,prague"),
+        ("St. Vitus Cathedral", "Gothic cathedral with Mucha's stained glass.", "religious", 4.7, 50.0909, 14.4005, 60, ("09:00", "17:00"), "st,vitus"),
+        ("Petřín Hill", "Funicular up to rose gardens and a mini Eiffel Tower.", "park", 4.6, 50.0833, 14.3950, 120, "always", "petrin,hill"),
+    ],
+    "Los Angeles": [
+        ("Griffith Observatory", "Free telescopes and the best Hollywood Sign view.", "viewpoint", 4.7, 34.1184, -118.3004, 120, ("12:00", "22:00", ["monday"]), "griffith,observatory"),
+        ("Santa Monica Pier", "Ferris wheel and street performers over the Pacific.", "entertainment", 4.5, 34.0092, -118.4973, 120, "always", "santa,monica,pier"),
+        ("Getty Center", "Hilltop art campus with gardens and city views.", "museum", 4.8, 34.0780, -118.4741, 180, ("10:00", "17:30", ["monday"]), "getty,center"),
+        ("Hollywood Walk of Fame", "Star-studded sidewalks along Hollywood Boulevard.", "landmark", 4.2, 34.1016, -118.3267, 60, "always", "walk,of,fame"),
+        ("Venice Beach Boardwalk", "Skaters, muscle beach and ocean sunsets.", "beach", 4.4, 33.9850, -118.4695, 150, "always", "venice,beach"),
+    ],
+    "Madrid": [
+        ("Prado Museum", "Velázquez, Goya and Europe's finest old masters.", "museum", 4.8, 40.4138, -3.6921, 180, ("10:00", "20:00"), "prado,museum"),
+        ("Retiro Park", "Crystal Palace and rowboats in the city's green heart.", "park", 4.7, 40.4153, -3.6845, 120, ("06:00", "24:00"), "retiro,park"),
+        ("Royal Palace", "Europe's largest royal palace — 3,418 rooms.", "landmark", 4.6, 40.4179, -3.7141, 120, ("10:00", "18:00"), "royal,palace,madrid"),
+        ("Plaza Mayor", "Arcaded square at the heart of Habsburg Madrid.", "landmark", 4.5, 40.4155, -3.7074, 45, "always", "plaza,mayor,madrid"),
+        ("Mercado San Miguel", "Iron-and-glass market of tapas and vermouth.", "restaurant", 4.4, 40.4154, -3.7090, 75, ("10:00", "24:00"), "mercado,san,miguel"),
+    ],
+    "Munich": [
+        ("Marienplatz", "Glockenspiel chimes over the neo-Gothic town hall.", "landmark", 4.6, 48.1374, 11.5755, 60, "always", "marienplatz"),
+        ("English Garden", "Vast park with beer gardens and river surfers.", "park", 4.7, 48.1642, 11.6056, 120, "always", "english,garden,munich"),
+        ("Nymphenburg Palace", "Baroque summer palace of the Wittelsbachs.", "landmark", 4.6, 48.1583, 11.5033, 150, ("09:00", "18:00"), "nymphenburg"),
+        ("Deutsches Museum", "World's largest science and technology museum.", "museum", 4.5, 48.1298, 11.5833, 180, ("09:00", "17:00"), "deutsches,museum"),
+        ("Viktualienmarkt", "Open-air gourmet market with a beer garden.", "restaurant", 4.5, 48.1351, 11.5762, 75, ("08:00", "20:00", ["sunday"]), "viktualienmarkt"),
+    ],
+    "Berlin": [
+        ("Brandenburg Gate", "Neoclassical symbol of German reunification.", "landmark", 4.7, 52.5163, 13.3777, 45, "always", "brandenburg,gate"),
+        ("Museum Island", "Five world-class museums on a Spree island.", "museum", 4.7, 52.5169, 13.4019, 240, ("10:00", "18:00", ["monday"]), "museum,island"),
+        ("East Side Gallery", "Longest surviving Berlin Wall stretch, now open-air art.", "landmark", 4.5, 52.5050, 13.4399, 75, "always", "east,side,gallery"),
+        ("Reichstag Dome", "Glass dome spiraling above the parliament (register free).", "viewpoint", 4.6, 52.5186, 13.3762, 90, ("08:00", "24:00"), "reichstag"),
+        ("Memorial to the Murdered Jews", "2,711 concrete stelae of remembrance.", "landmark", 4.6, 52.5139, 13.3784, 45, "always", "holocaust,memorial"),
+    ],
+    "Cancún": [
+        ("Chichén Itzá Day Trip", "Mayan wonder of the world — El Castillo pyramid.", "landmark", 4.8, 20.6843, -88.5678, 480, ("08:00", "17:00"), "chichen,itza"),
+        ("Playa Delfines", "Public beach with the famous CANCUN sign.", "beach", 4.6, 21.0613, -86.7783, 240, "always", "cancun,beach"),
+        ("Isla Mujeres", "Ferry to turquoise Playa Norte and golf-cart island life.", "beach", 4.7, 21.2322, -86.7341, 360, "always", "isla,mujeres"),
+        ("Xcaret Park", "Eco-archaeological park with underground rivers.", "entertainment", 4.7, 20.5792, -87.1180, 480, ("08:30", "22:30"), "xcaret"),
+        ("Cenote Dos Ojos", "Crystal twin sinkholes for snorkelling and diving.", "park", 4.7, 20.3245, -87.3893, 180, ("08:00", "17:00"), "cenote"),
+    ],
+    "Mexico City": [
+        ("Zócalo", "One of the world's largest squares, flanked by the cathedral.", "landmark", 4.6, 19.4326, -99.1332, 60, "always", "zocalo,mexico"),
+        ("Teotihuacán", "Climb the Pyramids of the Sun and Moon.", "landmark", 4.8, 19.6925, -98.8439, 360, ("08:00", "17:00"), "teotihuacan"),
+        ("Frida Kahlo Museum", "The Blue House where Frida was born and died.", "museum", 4.5, 19.3551, -99.1626, 120, ("10:00", "18:00", ["monday"]), "frida,kahlo,museum"),
+        ("Chapultepec Castle", "Hilltop castle in the Americas' oldest urban park.", "museum", 4.7, 19.4204, -99.1819, 150, ("09:00", "17:00", ["monday"]), "chapultepec"),
+        ("Xochimilco", "Painted trajinera boats along Aztec-era canals.", "entertainment", 4.4, 19.2576, -99.1058, 180, ("09:00", "18:00"), "xochimilco"),
+    ],
+    "Las Vegas": [
+        ("The Strip", "Four miles of mega-resorts, fountains and neon.", "entertainment", 4.6, 36.1147, -115.1728, 180, "always", "las,vegas,strip"),
+        ("Bellagio Fountains", "Choreographed water ballet every 15–30 minutes.", "landmark", 4.7, 36.1126, -115.1767, 45, ("15:00", "24:00"), "bellagio,fountains"),
+        ("Fremont Street Experience", "LED canopy and vintage casinos downtown.", "entertainment", 4.4, 36.1699, -115.1444, 120, "always", "fremont,street"),
+        ("High Roller Wheel", "550-foot observation wheel behind the LINQ.", "viewpoint", 4.5, 36.1175, -115.1685, 60, ("12:00", "24:00"), "high,roller,vegas"),
+        ("Red Rock Canyon", "Crimson sandstone scenic drive minutes from the Strip.", "park", 4.8, 36.1357, -115.4277, 180, ("06:00", "20:00"), "red,rock,canyon"),
+    ],
+    "Miami": [
+        ("South Beach", "Art-deco icons, white sand and ocean-drive people-watching.", "beach", 4.6, 25.7826, -80.1341, 240, "always", "south,beach,miami"),
+        ("Wynwood Walls", "Open-air museum of giant street-art murals.", "other", 4.6, 25.8010, -80.1995, 90, ("10:00", "19:00"), "wynwood,walls"),
+        ("Little Havana", "Cuban cafés, cigars and dominoes on Calle Ocho.", "restaurant", 4.5, 25.7659, -80.2191, 120, "always", "little,havana"),
+        ("Vizcaya Museum & Gardens", "Renaissance-style villa on Biscayne Bay.", "museum", 4.6, 25.7445, -80.2104, 120, ("09:30", "16:30", ["tuesday"]), "vizcaya"),
+        ("Bayside Marketplace", "Waterfront mall with boat tours of celebrity islands.", "shopping", 4.3, 25.7785, -80.1869, 120, ("10:00", "22:00"), "bayside,miami"),
+    ],
+    "Orlando": [
+        ("Magic Kingdom", "Cinderella Castle and the classic Disney parades.", "entertainment", 4.7, 28.4177, -81.5812, 600, ("09:00", "22:00"), "magic,kingdom"),
+        ("Universal's Islands of Adventure", "The Wizarding World of Harry Potter and big coasters.", "entertainment", 4.7, 28.4711, -81.4677, 600, ("09:00", "21:00"), "islands,of,adventure"),
+        ("EPCOT", "World Showcase pavilions and futuristic rides.", "entertainment", 4.6, 28.3747, -81.5494, 540, ("09:00", "21:00"), "epcot"),
+        ("ICON Park", "The Wheel, aquariums and dining on I-Drive.", "entertainment", 4.4, 28.4435, -81.4685, 180, ("11:00", "23:00"), "icon,park,orlando"),
+        ("Kennedy Space Center", "Real rockets, the Atlantis shuttle and launch pads.", "museum", 4.7, 28.5729, -80.6490, 420, ("09:00", "17:00"), "kennedy,space,center"),
+    ],
+    "San Francisco": [
+        ("Golden Gate Bridge", "Walk or bike the world's most photographed bridge.", "landmark", 4.8, 37.8199, -122.4783, 120, "always", "golden,gate"),
+        ("Alcatraz Island", "Ferry to the infamous island penitentiary (book early).", "landmark", 4.7, 37.8267, -122.4230, 180, ("09:00", "16:30"), "alcatraz"),
+        ("Fisherman's Wharf", "Sea lions, sourdough and crab stands at Pier 39.", "other", 4.4, 37.8080, -122.4177, 120, "always", "fishermans,wharf"),
+        ("Golden Gate Park", "Gardens, bison and museums across 1,000 acres.", "park", 4.7, 37.7694, -122.4862, 180, "always", "golden,gate,park"),
+        ("Lombard Street", "The famously crooked, flower-lined block.", "landmark", 4.4, 37.8021, -122.4187, 30, "always", "lombard,street"),
+    ],
+    "Lisbon": [
+        ("Belém Tower", "Manueline fortress guarding the Tagus since 1519.", "landmark", 4.5, 38.6916, -9.2160, 75, ("10:00", "18:00", ["monday"]), "belem,tower"),
+        ("Jerónimos Monastery", "UNESCO masterpiece of Manueline carving.", "religious", 4.7, 38.6979, -9.2068, 90, ("10:00", "18:00", ["monday"]), "jeronimos"),
+        ("Alfama & Tram 28", "Ride the yellow tram through the oldest quarter.", "other", 4.6, 38.7131, -9.1335, 120, "always", "lisbon,tram"),
+        ("São Jorge Castle", "Moorish castle with the city's best miradouro.", "landmark", 4.5, 38.7139, -9.1335, 120, ("09:00", "21:00"), "sao,jorge,castle"),
+        ("Pastéis de Belém", "The original custard tart bakery since 1837.", "restaurant", 4.6, 38.6975, -9.2032, 45, ("08:00", "22:00"), "pasteis,de,belem"),
+    ],
+    "Venice": [
+        ("St. Mark's Basilica", "Golden Byzantine mosaics on the great square.", "religious", 4.7, 45.4345, 12.3398, 90, ("09:30", "17:15"), "st,marks,basilica"),
+        ("Doge's Palace", "Gothic palace and the Bridge of Sighs.", "museum", 4.7, 45.4337, 12.3404, 120, ("09:00", "18:00"), "doges,palace"),
+        ("Grand Canal & Rialto", "Vaporetto ride beneath the marble Rialto Bridge.", "landmark", 4.7, 45.4380, 12.3359, 90, "always", "rialto,bridge"),
+        ("Murano & Burano", "Glassblowers' island and rainbow fishing houses.", "other", 4.6, 45.4853, 12.4167, 240, "always", "burano"),
+        ("Gondola Ride", "Classic glide through the back canals.", "entertainment", 4.5, 45.4340, 12.3388, 45, ("09:00", "19:00"), "gondola,venice"),
+    ],
+    "Florence": [
+        ("Uffizi Gallery", "Botticelli's Venus and the Renaissance canon.", "museum", 4.7, 43.7678, 11.2553, 180, ("08:15", "18:30", ["monday"]), "uffizi"),
+        ("Duomo & Brunelleschi's Dome", "Climb 463 steps inside the terracotta dome.", "religious", 4.7, 43.7731, 11.2560, 120, ("08:15", "19:00", ["sunday"]), "florence,duomo"),
+        ("Ponte Vecchio", "Medieval bridge lined with goldsmiths.", "landmark", 4.6, 43.7679, 11.2531, 30, "always", "ponte,vecchio"),
+        ("Galleria dell'Accademia", "Michelangelo's David in the flesh… marble.", "museum", 4.7, 43.7768, 11.2589, 90, ("08:15", "18:50", ["monday"]), "david,michelangelo"),
+        ("Piazzale Michelangelo", "Sunset terrace over the terracotta skyline.", "viewpoint", 4.8, 43.7629, 11.2650, 60, "always", "piazzale,michelangelo"),
+    ],
+    "Athens": [
+        ("Acropolis & Parthenon", "The sacred rock crowning Western civilisation.", "landmark", 4.8, 37.9715, 23.7267, 150, ("08:00", "19:00"), "acropolis"),
+        ("Acropolis Museum", "Glass floors over excavations, marbles in daylight.", "museum", 4.7, 37.9685, 23.7286, 120, ("09:00", "17:00", ["monday"]), "acropolis,museum"),
+        ("Plaka District", "Neoclassical lanes of tavernas beneath the rock.", "restaurant", 4.6, 37.9701, 23.7280, 120, "always", "plaka,athens"),
+        ("Temple of Olympian Zeus", "Colossal columns of the once-greatest Greek temple.", "landmark", 4.5, 37.9693, 23.7331, 45, ("08:00", "19:00"), "temple,zeus"),
+        ("Mount Lycabettus", "Funicular to the city's highest viewpoint.", "viewpoint", 4.6, 37.9818, 23.7430, 90, "always", "lycabettus"),
+    ],
+    "Budapest": [
+        ("Hungarian Parliament", "Neo-Gothic riverside palace of 691 rooms.", "landmark", 4.8, 47.5071, 19.0458, 90, ("08:00", "18:00"), "budapest,parliament"),
+        ("Széchenyi Thermal Baths", "Steamy outdoor pools in a baroque palace.", "entertainment", 4.5, 47.5186, 19.0810, 180, ("07:00", "20:00"), "szechenyi,baths"),
+        ("Buda Castle", "Hilltop palace district with funicular and museums.", "landmark", 4.6, 47.4962, 19.0397, 150, "always", "buda,castle"),
+        ("Fisherman's Bastion", "Fairy-tale turrets framing Parliament views.", "viewpoint", 4.7, 47.5022, 19.0344, 60, "always", "fishermans,bastion"),
+        ("Ruin Bars (Szimpla Kert)", "Eclectic bars in pre-war tenement courtyards.", "entertainment", 4.5, 47.4972, 19.0633, 120, ("15:00", "04:00"), "ruin,bar,budapest"),
+    ],
+    "Dublin": [
+        ("Trinity College & Book of Kells", "Ireland's oldest library and its illuminated gospel.", "museum", 4.6, 53.3438, -6.2546, 90, ("09:30", "17:00"), "trinity,college,dublin"),
+        ("Guinness Storehouse", "Seven floors of the black stuff, pint included.", "entertainment", 4.6, 53.3419, -6.2867, 120, ("09:30", "19:00"), "guinness,storehouse"),
+        ("Temple Bar", "Cobbled quarter of pubs and live trad music.", "entertainment", 4.4, 53.3454, -6.2646, 120, "always", "temple,bar"),
+        ("Dublin Castle", "Eight centuries of Irish history in one courtyard.", "landmark", 4.4, 53.3429, -6.2674, 90, ("09:45", "17:45"), "dublin,castle"),
+        ("St. Patrick's Cathedral", "Ireland's largest cathedral, founded 1191.", "religious", 4.6, 53.3394, -6.2714, 60, ("09:30", "17:00"), "st,patricks,dublin"),
+    ],
+    "Sydney": [
+        ("Sydney Opera House", "Sail-shaped icon — tour it or catch a show.", "landmark", 4.7, -33.8568, 151.2153, 120, ("09:00", "17:00"), "sydney,opera,house"),
+        ("Sydney Harbour Bridge", "Climb the arch or stroll the pedestrian walkway.", "landmark", 4.7, -33.8523, 151.2108, 120, "always", "harbour,bridge"),
+        ("Bondi Beach", "Legendary surf beach and the Bondi-Coogee coastal walk.", "beach", 4.6, -33.8908, 151.2743, 240, "always", "bondi"),
+        ("Royal Botanic Garden", "Harbourside gardens with Opera House views.", "park", 4.7, -33.8642, 151.2166, 90, ("07:00", "19:30"), "botanic,garden,sydney"),
+        ("Taronga Zoo", "Giraffes with the world's best skyline backdrop.", "entertainment", 4.6, -33.8433, 151.2411, 240, ("09:30", "17:00"), "taronga,zoo"),
+    ],
+    "Rio de Janeiro": [
+        ("Christ the Redeemer", "Art-deco Christ embracing the city from Corcovado.", "landmark", 4.8, -22.9519, -43.2105, 180, ("08:00", "19:00"), "christ,redeemer"),
+        ("Sugarloaf Mountain", "Two-stage cable car to the granite peak.", "viewpoint", 4.8, -22.9492, -43.1545, 150, ("08:00", "20:00"), "sugarloaf"),
+        ("Copacabana Beach", "Four kilometres of golden sand and caipirinhas.", "beach", 4.6, -22.9719, -43.1825, 240, "always", "copacabana"),
+        ("Selarón Steps", "215 steps of riotous hand-painted tiles.", "landmark", 4.6, -22.9151, -43.1791, 45, "always", "selaron,steps"),
+        ("Tijuca National Park", "World's largest urban rainforest, waterfalls included.", "park", 4.7, -22.9430, -43.2870, 240, ("08:00", "17:00"), "tijuca"),
+    ],
+    "Buenos Aires": [
+        ("La Boca & Caminito", "Painted tin houses and street tango.", "other", 4.4, -34.6393, -58.3631, 90, "always", "caminito,la,boca"),
+        ("Recoleta Cemetery", "Marble city of mausoleums — Evita rests here.", "landmark", 4.6, -34.5875, -58.3933, 90, ("08:00", "18:00"), "recoleta,cemetery"),
+        ("Teatro Colón", "One of the world's great opera houses.", "entertainment", 4.8, -34.6010, -58.3831, 90, ("09:00", "17:00"), "teatro,colon"),
+        ("San Telmo Market", "Antiques, parrillas and Sunday street fair.", "shopping", 4.5, -34.6202, -58.3717, 120, ("10:00", "18:00"), "san,telmo"),
+        ("Palermo Soho", "Leafy quarter of murals, boutiques and bistros.", "restaurant", 4.5, -34.5889, -58.4306, 120, "always", "palermo,buenos,aires"),
+    ],
+    "Cairo": [
+        ("Pyramids of Giza & Sphinx", "The last ancient wonder still standing.", "landmark", 4.8, 29.9792, 31.1342, 240, ("08:00", "17:00"), "pyramids,giza"),
+        ("Egyptian Museum", "Tutankhamun's gold among 120,000 artefacts.", "museum", 4.6, 30.0478, 31.2336, 180, ("09:00", "17:00"), "egyptian,museum"),
+        ("Khan el-Khalili", "Mediaeval bazaar of lanterns, spices and silver.", "shopping", 4.4, 30.0477, 31.2622, 120, ("09:00", "23:00"), "khan,el,khalili"),
+        ("Citadel of Saladin", "Fortress crowned by the alabaster Muhammad Ali Mosque.", "landmark", 4.6, 30.0287, 31.2599, 120, ("08:00", "17:00"), "cairo,citadel"),
+        ("Nile Felucca Ride", "Lateen-sailed boat drift at sunset.", "other", 4.6, 30.0371, 31.2249, 90, ("09:00", "21:00"), "felucca,nile"),
+    ],
+    "Marrakech": [
+        ("Jemaa el-Fnaa", "Snake charmers by day, food stalls by night.", "landmark", 4.5, 31.6258, -7.9891, 120, "always", "jemaa,el,fnaa"),
+        ("Jardin Majorelle", "Cobalt-blue villa garden restored by Yves Saint Laurent.", "park", 4.6, 31.6417, -8.0035, 90, ("08:00", "18:30"), "majorelle"),
+        ("Bahia Palace", "19th-century palace of zellige courtyards.", "landmark", 4.5, 31.6218, -7.9824, 90, ("09:00", "17:00"), "bahia,palace"),
+        ("Koutoubia Mosque", "12th-century minaret that set the style for Seville.", "religious", 4.6, 31.6242, -7.9939, 45, "always", "koutoubia"),
+        ("The Souks", "Labyrinth of leather, lamps and carpets.", "shopping", 4.4, 31.6295, -7.9890, 150, ("09:00", "21:00"), "marrakech,souk"),
+    ],
+    "Cape Town": [
+        ("Table Mountain", "Cableway to the flat-topped icon's summit.", "viewpoint", 4.8, -33.9628, 18.4098, 180, ("08:00", "18:00"), "table,mountain"),
+        ("V&A Waterfront", "Harbour shopping, food market and the ferris wheel.", "shopping", 4.6, -33.9036, 18.4208, 150, ("09:00", "21:00"), "va,waterfront"),
+        ("Robben Island", "Ferry to Mandela's prison, guided by ex-inmates.", "museum", 4.6, -33.8076, 18.3712, 240, ("09:00", "15:00"), "robben,island"),
+        ("Boulders Beach", "Swim alongside a colony of African penguins.", "beach", 4.7, -34.1972, 18.4509, 120, ("08:00", "18:30"), "boulders,beach,penguins"),
+        ("Kirstenbosch Gardens", "Botanical garden on the mountain's eastern slopes.", "park", 4.8, -33.9881, 18.4326, 150, ("08:00", "19:00"), "kirstenbosch"),
+    ],
+    "Toronto": [
+        ("CN Tower", "Glass-floor lookout 346 m above the lake.", "viewpoint", 4.6, 43.6426, -79.3871, 90, ("09:00", "22:30"), "cn,tower"),
+        ("Royal Ontario Museum", "Dinosaurs to dynasties behind the crystal facade.", "museum", 4.6, 43.6677, -79.3948, 150, ("10:00", "17:30", ["monday"]), "royal,ontario,museum"),
+        ("Distillery District", "Victorian industrial lanes of galleries and cafés.", "other", 4.5, 43.6503, -79.3596, 120, ("10:00", "21:00"), "distillery,district"),
+        ("St. Lawrence Market", "Peameal bacon sandwiches in a historic hall.", "restaurant", 4.5, 43.6487, -79.3716, 90, ("08:00", "18:00", ["monday"]), "st,lawrence,market"),
+        ("Toronto Islands", "Ferry to car-free beaches with skyline views.", "park", 4.7, 43.6205, -79.3790, 240, ("08:00", "23:00"), "toronto,islands"),
+    ],
+    "Vancouver": [
+        ("Stanley Park", "Seawall cycling through 400 ha of coastal rainforest.", "park", 4.8, 49.3017, -123.1417, 180, "always", "stanley,park"),
+        ("Granville Island", "Public market, artisans and waterfront patios.", "shopping", 4.6, 49.2712, -123.1340, 150, ("09:00", "19:00"), "granville,island"),
+        ("Capilano Suspension Bridge", "137 m swaying bridge above the canyon.", "park", 4.5, 49.3429, -123.1149, 150, ("09:00", "19:00"), "capilano"),
+        ("Grouse Mountain", "Skyride gondola, lumberjack shows and grizzlies.", "viewpoint", 4.5, 49.3803, -123.0827, 240, ("09:00", "21:00"), "grouse,mountain"),
+        ("Gastown", "Steam clock and brick lanes of the original townsite.", "other", 4.4, 49.2839, -123.1089, 90, "always", "gastown"),
+    ],
+    "Copenhagen": [
+        ("Nyhavn", "Postcard canal of gabled townhouses and tall ships.", "landmark", 4.7, 55.6797, 12.5912, 75, "always", "nyhavn"),
+        ("Tivoli Gardens", "1843 pleasure garden that inspired Disneyland.", "entertainment", 4.6, 55.6736, 12.5681, 240, ("11:00", "22:00"), "tivoli,gardens"),
+        ("The Little Mermaid", "Hans Christian Andersen's bronze heroine on her rock.", "landmark", 4.2, 55.6929, 12.5993, 30, "always", "little,mermaid,copenhagen"),
+        ("Rosenborg Castle", "Renaissance castle keeping the crown jewels.", "landmark", 4.6, 55.6857, 12.5772, 120, ("10:00", "17:00", ["monday"]), "rosenborg"),
+        ("Freetown Christiania", "Car-free commune of murals and music venues.", "other", 4.3, 55.6713, 12.5990, 90, "always", "christiania"),
+    ],
+}

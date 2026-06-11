@@ -90,16 +90,23 @@ def _minutes_to_hhmm(base_minutes: int) -> str:
     return f"{h:02d}:{m:02d}"
 
 
+# A sightseeing day runs from start_time until this hour (packing budget)
+_DAY_END_MINUTES = 20 * 60   # 20:00
+
+
 def generate_itinerary(
     db: Session,
     user_id: uuid.UUID,
     swipe_session_id: uuid.UUID,
     destination_id: uuid.UUID,
-    itinerary_date: date | None,
+    start_date: date | None,
+    end_date: date | None = None,
     start_time_str: str = "09:00",
 ) -> Itinerary:
     """
     Core entry point. Returns a persisted Itinerary instance.
+    Supports multi-day trips: stops are packed into days respecting the
+    daily time budget and each place's opening days.
     Raises ValueError for invalid inputs.
     """
     # ── 1. Load session and accepted places ───────────────────────────────
@@ -123,51 +130,87 @@ def generate_itinerary(
     place_ids = [row[0] for row in accepted_ids]
     places = db.query(Place).filter(Place.id.in_(place_ids)).all()
 
-    # ── 2. Filter by opening hours ─────────────────────────────────────────
+    start_date = start_date or date.today()
+    end_date = end_date or start_date
+    if end_date < start_date:
+        raise ValueError("End date must be on or after start date")
+    num_days = (end_date - start_date).days + 1
+
     start_h, start_m = map(int, start_time_str.split(":"))
-    day_name = (itinerary_date or date.today()).strftime("%A").lower()
-    open_places = [p for p in places if _is_open_on_day(p, day_name, start_h)]
-    if not open_places:
-        open_places = places   # Fallback: keep all if filter is too aggressive
+    day_start_min = start_h * 60 + start_m
 
-    # ── 3. Route optimization ─────────────────────────────────────────────
-    ordered = _nearest_neighbour_sort(open_places)
+    # ── 2. Route optimization (global order) ──────────────────────────────
+    remaining = _nearest_neighbour_sort(places)
 
-    # ── 4. Time assignment ────────────────────────────────────────────────
-    cursor_min = start_h * 60 + start_m
+    # ── 3. Pack stops into days ───────────────────────────────────────────
     stops_data: list[dict] = []
+    order_counter = 0
+    total_duration = 0
 
-    for i, place in enumerate(ordered):
-        arrival = cursor_min
-        departure = arrival + place.estimated_duration_minutes
-        travel_to_next = _travel_minutes(place, ordered[i + 1]) if i < len(ordered) - 1 else 0
+    for day_index in range(num_days):
+        if not remaining:
+            break
+        current_date = start_date + timedelta(days=day_index)
+        day_name = current_date.strftime("%A").lower()
+        is_last_day = day_index == num_days - 1
 
-        stops_data.append({
-            "place": place,
-            "order": i,
-            "arrival_time": _minutes_to_hhmm(arrival),
-            "departure_time": _minutes_to_hhmm(departure),
-            "travel_time_to_next_minutes": travel_to_next,
-            "travel_mode": "walking",
-            "travel_distance_meters": (
-                _haversine_distance_meters(
+        cursor_min = day_start_min
+        carry: list[Place] = []
+        prev_place: Place | None = None
+
+        for place in remaining:
+            # Closed this weekday → try another day (unless it's the last one)
+            if not _is_open_on_day(place, day_name, cursor_min // 60) and not is_last_day:
+                carry.append(place)
+                continue
+
+            travel = _travel_minutes(prev_place, place) if prev_place else 0
+            arrival = cursor_min + travel
+            departure = arrival + place.estimated_duration_minutes
+
+            # Day budget exhausted → defer to the next day (last day takes overflow)
+            if departure > _DAY_END_MINUTES and prev_place is not None and not is_last_day:
+                carry.append(place)
+                continue
+
+            if prev_place is not None and stops_data:
+                stops_data[-1]["travel_time_to_next_minutes"] = travel
+                stops_data[-1]["travel_distance_meters"] = _haversine_distance_meters(
+                    prev_place.latitude, prev_place.longitude,
                     place.latitude, place.longitude,
-                    ordered[i + 1].latitude, ordered[i + 1].longitude,
-                ) if i < len(ordered) - 1 else 0
-            ),
-        })
-        cursor_min = departure + travel_to_next
+                )
 
-    total_duration = cursor_min - (start_h * 60 + start_m)
+            stops_data.append({
+                "place": place,
+                "order": order_counter,
+                "day": day_index + 1,
+                "arrival_time": _minutes_to_hhmm(arrival),
+                "departure_time": _minutes_to_hhmm(departure),
+                "travel_time_to_next_minutes": 0,
+                "travel_mode": "walking",
+                "travel_distance_meters": 0,
+            })
+            order_counter += 1
+            total_duration += departure - arrival + travel
+            cursor_min = departure
+            prev_place = place
+
+        remaining = carry
+
     destination = db.get(Destination, destination_id)
+    if num_days == 1:
+        title = f"{destination.city} — {start_date.strftime('%b %d')}"
+    else:
+        title = f"{destination.city} — {start_date.strftime('%b %d')}–{end_date.strftime('%b %d')}"
 
-    # ── 5. Persist ────────────────────────────────────────────────────────
+    # ── 4. Persist ────────────────────────────────────────────────────────
     itinerary = Itinerary(
         user_id=user_id,
         destination_id=destination_id,
         swipe_session_id=swipe_session_id,
-        title=f"{destination.city} — {(itinerary_date or date.today()).strftime('%b %d')}",
-        date=itinerary_date,
+        title=title,
+        date=start_date,
+        end_date=end_date,
         start_time=start_time_str,
         total_duration_minutes=total_duration,
     )
@@ -179,6 +222,7 @@ def generate_itinerary(
             itinerary_id=itinerary.id,
             place_id=s["place"].id,
             order=s["order"],
+            day=s["day"],
             arrival_time=s["arrival_time"],
             departure_time=s["departure_time"],
             travel_time_to_next_minutes=s["travel_time_to_next_minutes"],

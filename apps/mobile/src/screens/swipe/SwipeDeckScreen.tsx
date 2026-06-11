@@ -15,7 +15,7 @@ import { SwipeCard } from '../../components/swipe/SwipeCard';
 import { SwipeButtons } from '../../components/swipe/SwipeButtons';
 import { COLORS, SPACING, FONT_SIZE } from '../../constants';
 import type { SwipeDecision } from '@gowander/shared-types';
-import { isPlaceOpenOn } from '@gowander/shared-utils';
+import { isPlaceOpenInRange } from '@gowander/shared-utils';
 import { INTERESTS } from '@gowander/shared-constants';
 import { useAuthStore } from '../../store/slices/auth.slice';
 
@@ -23,7 +23,7 @@ export function SwipeDeckScreen() {
 
     const route = useRoute<SwipeDeckRouteProp>();
     const navigation = useNavigation<AppScreenNavigationProp>();
-    const { destination, date } = route.params;
+    const { destination, startDate, endDate } = route.params;
 
     const destinationId = String(destination.id);
 
@@ -78,7 +78,8 @@ export function SwipeDeckScreen() {
             navigation.replace('ItinerarySummary', {
                 swipeSessionId: sessionId,
                 destination,
-                date,
+                startDate,
+                endDate,
             });
         }
     }, [isSessionComplete, sessionId]);
@@ -89,10 +90,10 @@ export function SwipeDeckScreen() {
         if (!card) return;
 
         // Places closed on the travel date can't be accepted — only dismissed
-        if (decision === 'accepted' && !isPlaceOpenOn(card.opening_hours, date)) {
+        if (decision === 'accepted' && !isPlaceOpenInRange(card.opening_hours, startDate, endDate)) {
             Alert.alert(
                 'Not available',
-                `${card.name} is closed on your selected date. You can only skip it.`,
+                `${card.name} is closed during your trip dates. You can only skip it.`,
             );
             return;
         }
@@ -178,7 +179,7 @@ export function SwipeDeckScreen() {
                         stackIndex={i}
                         onSwipe={i === 0 ? handleSwipe : undefined}
                         gestureDisabled={swipe.isPending || finish.isPending}
-                        unavailable={!isPlaceOpenOn(card.opening_hours, date)}
+                        unavailable={!isPlaceOpenInRange(card.opening_hours, startDate, endDate)}
                     />
                 ))}
             </View>

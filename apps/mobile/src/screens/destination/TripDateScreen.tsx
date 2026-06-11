@@ -5,40 +5,82 @@ import type { TripDateRouteProp, AppScreenNavigationProp } from '../../types/nav
 import { CalendarPicker } from '../../components/ui/CalendarPicker';
 import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
 
+function formatShort(iso: string): string {
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(y, m - 1, d).toLocaleDateString(undefined, {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+    });
+}
+
 export function TripDateScreen() {
     const route = useRoute<TripDateRouteProp>();
     const navigation = useNavigation<AppScreenNavigationProp>();
     const { destination } = route.params;
 
-    const [selectedDate, setSelectedDate] = useState<string | null>(null);
+    const [startDate, setStartDate] = useState<string | null>(null);
+    const [endDate, setEndDate] = useState<string | null>(null);
+
+    function handleSelectDate(iso: string) {
+        if (!startDate || (startDate && endDate)) {
+            // First tap, or restarting after a complete range
+            setStartDate(iso);
+            setEndDate(null);
+        } else if (iso < startDate) {
+            // Tapped before the start → treat as new start
+            setStartDate(iso);
+            setEndDate(null);
+        } else {
+            // Same day tapped twice = one-day trip
+            setEndDate(iso);
+        }
+    }
 
     function handleContinue() {
-        if (!selectedDate) return;
-        navigation.navigate('SwipeDeck', { destination, date: selectedDate });
+        if (!startDate || !endDate) return;
+        navigation.navigate('SwipeDeck', { destination, startDate, endDate });
     }
+
+    const tripDays =
+        startDate && endDate
+            ? Math.round(
+                  (new Date(endDate).getTime() - new Date(startDate).getTime()) /
+                      86_400_000,
+              ) + 1
+            : 0;
 
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.title}>When are you visiting?</Text>
+                <Text style={styles.title}>When is your trip?</Text>
                 <Text style={styles.subtitle}>
-                    We'll flag places in {destination.city} that are closed on your travel date.
+                    {!startDate
+                        ? `Pick your arrival day in ${destination.city}.`
+                        : !endDate
+                            ? 'Now pick your departure day (tap the same day for a one-day trip).'
+                            : `${formatShort(startDate)} → ${formatShort(endDate)} · ${tripDays} day${tripDays > 1 ? 's' : ''}`}
                 </Text>
             </View>
 
             <CalendarPicker
-                selectedDate={selectedDate}
-                onSelectDate={setSelectedDate}
+                rangeStart={startDate}
+                rangeEnd={endDate}
+                onSelectDate={handleSelectDate}
             />
 
             <TouchableOpacity
-                style={[styles.continueButton, !selectedDate && styles.continueDisabled]}
+                style={[styles.continueButton, (!startDate || !endDate) && styles.continueDisabled]}
                 onPress={handleContinue}
-                disabled={!selectedDate}
+                disabled={!startDate || !endDate}
                 activeOpacity={0.8}
             >
                 <Text style={styles.continueText}>
-                    {selectedDate ? 'Continue' : 'Pick a date'}
+                    {!startDate
+                        ? 'Pick your arrival day'
+                        : !endDate
+                            ? 'Pick your departure day'
+                            : 'Continue'}
                 </Text>
             </TouchableOpacity>
         </View>

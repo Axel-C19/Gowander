@@ -5,7 +5,8 @@ import { apiClient } from './api';
 export interface GenerateItineraryRequest {
     swipe_session_id: string;
     destination_id: string;
-    date?: string;
+    start_date?: string;
+    end_date?: string;
     start_time: string;
 }
 
@@ -16,8 +17,11 @@ export const itineraryService = {
             destination_id: request.destination_id,
             start_time: request.start_time,
         };
-        if (request.date) {
-            payload.date = request.date;
+        if (request.start_date) {
+            payload.start_date = request.start_date;
+        }
+        if (request.end_date) {
+            payload.end_date = request.end_date;
         }
         const { data } = await apiClient.post<Itinerary>(
             ENDPOINTS.ITINERARY.GENERATE,
