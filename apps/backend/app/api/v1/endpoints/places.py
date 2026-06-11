@@ -1,5 +1,4 @@
 from fastapi import APIRouter, HTTPException, Query
-from sqlalchemy.orm import Session
 import uuid
 from app.api.v1.deps import CurrentUser, DB
 from app.schemas.place import PlaceOut

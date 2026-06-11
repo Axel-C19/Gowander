@@ -15,7 +15,10 @@
       "Bash(git push *)",
       "Bash(PYTHONPATH=. .venv/bin/python -m app.db.seed)",
       "mcp__visualize__show_widget",
-      "Bash(npx expo *)"
+      "Bash(npx expo *)",
+      "Bash(gh auth *)",
+      "Bash(.venv/bin/pytest tests/integration/test_swipe.py::TestCompleteSession -q)",
+      "Bash(.venv/bin/ruff check *)"
     ]
   }
 }

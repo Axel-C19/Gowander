@@ -4,6 +4,10 @@ import uuid
 from datetime import datetime
 
 
+class SwipeSessionCreate(BaseModel):
+    destination_id: uuid.UUID
+
+
 class SwipeActionIn(BaseModel):
     place_id: uuid.UUID
     decision: Literal["accepted", "rejected"]
