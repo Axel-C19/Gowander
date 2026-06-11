@@ -12,7 +12,7 @@ class Destination(Base, UUIDMixin, TimestampMixin):
     country_code = Column(String(3), nullable=False)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)
-    image_url = Column(String(500), nullable=True)
+    image_url = Column(String(1000), nullable=True)
 
     places = relationship("Place", back_populates="destination", lazy="dynamic")
     swipe_sessions = relationship("SwipeSession", back_populates="destination")

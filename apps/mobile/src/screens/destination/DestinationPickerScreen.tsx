@@ -7,6 +7,7 @@ import {
   TextInput,
   StyleSheet,
   ActivityIndicator,
+  Image,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
@@ -91,9 +92,17 @@ export function DestinationPickerScreen() {
                 onPress={() => handleSelect(item)}
                 activeOpacity={0.7}
               >
-                <View style={[styles.iconCircle, { backgroundColor: tint.bg }]}>
-                  <Ionicons name={icon as any} size={22} color={tint.fg} />
-                </View>
+                {item.image_url ? (
+                  <Image
+                    source={{ uri: item.image_url }}
+                    style={styles.cityImage}
+                    resizeMode="cover"
+                  />
+                ) : (
+                  <View style={[styles.iconCircle, { backgroundColor: tint.bg }]}>
+                    <Ionicons name={icon as any} size={22} color={tint.fg} />
+                  </View>
+                )}
                 <View style={styles.cardText}>
                   <Text style={styles.cityName}>{item.city}</Text>
                   <Text style={styles.country}>{item.country}</Text>
@@ -157,11 +166,17 @@ const styles = StyleSheet.create({
     gap: SPACING.sm,
   },
   iconCircle: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
+    width: 52,
+    height: 52,
+    borderRadius: 26,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  cityImage: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: COLORS.border,
   },
   cardText: { flex: 1 },
   cityName: {

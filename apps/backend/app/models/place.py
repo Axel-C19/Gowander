@@ -17,7 +17,7 @@ class Place(Base, UUIDMixin, TimestampMixin):
     description = Column(String(2000), nullable=True)
     category = Column(String(50), nullable=False, default="other")
     rating = Column(Float, nullable=True)           # 1.0–5.0
-    image_url = Column(String(500), nullable=True)
+    image_url = Column(String(1000), nullable=True)
     address = Column(String(500), nullable=True)
     latitude = Column(Float, nullable=False)
     longitude = Column(Float, nullable=False)

@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -6,6 +6,7 @@ import {
   Dimensions,
   Image,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -19,7 +20,7 @@ import {
 } from 'react-native-gesture-handler';
 import type { PlaceCard } from '@gowander/shared-types';
 import type { SwipeDecision } from '@gowander/shared-types';
-import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, CATEGORY_COLORS } from '../../constants';
+import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, CATEGORY_COLORS, CATEGORY_ICONS } from '../../constants';
 import { SWIPE } from '@gowander/shared-constants';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -46,6 +47,8 @@ export function SwipeCard({
 }: SwipeCardProps) {
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
+  const [imageFailed, setImageFailed] = useState(false);
+  const categoryTint = CATEGORY_COLORS[place.category] ?? CATEGORY_COLORS.other;
 
   function handleSwipeComplete(decision: SwipeDecision) {
     onSwipe?.(decision);
@@ -115,11 +118,23 @@ export function SwipeCard({
   return (
     <GestureDetector gesture={pan}>
       <Animated.View style={[styles.card, unavailable && styles.cardUnavailable, animatedStyle]}>
-        <Image
-          source={{ uri: place.image_url }}
-          style={styles.image}
-          resizeMode="cover"
-        />
+        {place.image_url && !imageFailed ? (
+          <Image
+            source={{ uri: place.image_url }}
+            style={styles.image}
+            resizeMode="cover"
+            onError={() => setImageFailed(true)}
+          />
+        ) : (
+          // Never show an empty card: tinted placeholder with the category icon
+          <View style={[styles.image, styles.imageFallback, { backgroundColor: categoryTint.bg }]}>
+            <Ionicons
+              name={(CATEGORY_ICONS[place.category] ?? 'compass-outline') as any}
+              size={72}
+              color={categoryTint.fg}
+            />
+          </View>
+        )}
 
         {/* Grayscale scrim — card stays opaque so the next card never shows through */}
         {unavailable && <View style={styles.grayscaleScrim} pointerEvents="none" />}
@@ -192,6 +207,10 @@ const styles = StyleSheet.create({
   image: {
     width: '100%',
     height: '60%',
+  },
+  imageFallback: {
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   cardUnavailable: {
     backgroundColor: '#E8E8E8',

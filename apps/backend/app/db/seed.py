@@ -14,6 +14,7 @@ from app.models.destination import Destination
 from app.models.place import Place
 from app.core.security import hash_password
 from app.db.seed_data import CITIES, PLACES, expand_hours, img
+from app.db.image_urls import CITY_IMAGES, PLACE_IMAGES
 
 
 def seed():
@@ -49,6 +50,7 @@ def seed():
         updated_places = 0
 
         for name, city, country, country_code, lat, lon in CITIES:
+            city_image = CITY_IMAGES.get(city) or img(city.lower().replace(" ", ","))
             destination = db.query(Destination).filter(Destination.city == city).first()
             if not destination:
                 destination = Destination(
@@ -58,14 +60,17 @@ def seed():
                     country_code=country_code,
                     latitude=lat,
                     longitude=lon,
-                    image_url=img(city.lower().replace(" ", ",")),
+                    image_url=city_image,
                 )
                 db.add(destination)
                 db.flush()
                 created_cities += 1
+            else:
+                destination.image_url = city_image
 
             for (p_name, desc, category, rating, p_lat, p_lon,
                  minutes, hours, img_query) in PLACES.get(city, []):
+                place_image = PLACE_IMAGES.get(f"{city}|{p_name}") or img(img_query)
                 place = db.query(Place).filter(
                     Place.destination_id == destination.id,
                     Place.name == p_name,
@@ -73,6 +78,7 @@ def seed():
                 if place:
                     place.opening_hours = expand_hours(hours)
                     place.rating = rating
+                    place.image_url = place_image
                     updated_places += 1
                 else:
                     db.add(Place(
@@ -85,7 +91,7 @@ def seed():
                         longitude=p_lon,
                         estimated_duration_minutes=minutes,
                         opening_hours=expand_hours(hours),
-                        image_url=img(img_query),
+                        image_url=place_image,
                     ))
                     created_places += 1
 
