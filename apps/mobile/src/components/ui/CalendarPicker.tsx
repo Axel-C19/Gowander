@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, CARD } from '../../constants';
+import { FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, cardStyle, type ThemeColors } from '../../constants';
+import { useThemeColors } from '../../hooks/useTheme';
 
 interface CalendarPickerProps {
   /** Called with ISO date string "YYYY-MM-DD" when a day is selected. */
@@ -30,6 +31,9 @@ export function CalendarPicker({
   rangeStart,
   rangeEnd,
 }: CalendarPickerProps) {
+    const COLORS = useThemeColors();
+    const styles = React.useMemo(() => makeStyles(COLORS), [COLORS]);
+
   const today = startOfDay(new Date());
   const [viewYear, setViewYear] = useState(today.getFullYear());
   const [viewMonth, setViewMonth] = useState(today.getMonth());
@@ -41,10 +45,10 @@ export function CalendarPicker({
   const isCurrentMonth =
     viewYear === today.getFullYear() && viewMonth === today.getMonth();
 
-  const monthLabel = firstOfMonth.toLocaleDateString(undefined, {
-    month: 'long',
-    year: 'numeric',
-  });
+  const monthLabel = firstOfMonth
+    .toLocaleDateString(undefined, { month: 'long' })
+    .toUpperCase();
+  const yearLabel = String(viewYear);
 
   function goToPrevMonth() {
     if (isCurrentMonth) return; // Never navigate before today's month
@@ -65,11 +69,22 @@ export function CalendarPicker({
     }
   }
 
-  // Build the grid: blanks + day numbers
-  const cells: (number | null)[] = [
-    ...Array.from({ length: leadingBlanks }, () => null),
-    ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+  // Build the grid: grayed-out adjacent-month days pad out full weeks
+  const daysInPrevMonth = new Date(viewYear, viewMonth, 0).getDate();
+  const cells: { day: number; inMonth: boolean }[] = [
+    ...Array.from({ length: leadingBlanks }, (_, i) => ({
+      day: daysInPrevMonth - leadingBlanks + 1 + i,
+      inMonth: false,
+    })),
+    ...Array.from({ length: daysInMonth }, (_, i) => ({
+      day: i + 1,
+      inMonth: true,
+    })),
   ];
+  const trailingBlanks = (7 - (cells.length % 7)) % 7;
+  for (let i = 1; i <= trailingBlanks; i++) {
+    cells.push({ day: i, inMonth: false });
+  }
 
   return (
     <View style={styles.container}>
@@ -81,15 +96,18 @@ export function CalendarPicker({
           style={styles.navButton}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Text style={[styles.navText, isCurrentMonth && styles.navDisabled]}>‹</Text>
+          <Text style={[styles.navText, isCurrentMonth && styles.navDisabled]}>←</Text>
         </TouchableOpacity>
-        <Text style={styles.monthLabel}>{monthLabel}</Text>
+        <Text style={styles.monthLabel}>
+          {monthLabel}
+          <Text style={styles.yearLabel}>  {yearLabel}</Text>
+        </Text>
         <TouchableOpacity
           onPress={goToNextMonth}
           style={styles.navButton}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
         >
-          <Text style={styles.navText}>›</Text>
+          <Text style={styles.navText}>→</Text>
         </TouchableOpacity>
       </View>
 
@@ -102,11 +120,17 @@ export function CalendarPicker({
 
       {/* Day grid */}
       <View style={styles.grid}>
-        {cells.map((day, i) => {
-          if (day === null) {
-            return <View key={`blank-${i}`} style={styles.dayCell} />;
+        {cells.map((cell, i) => {
+          if (!cell.inMonth) {
+            return (
+              <View key={`adj-${i}`} style={styles.dayCell}>
+                <View style={styles.dayCircle}>
+                  <Text style={styles.adjacentDayText}>{cell.day}</Text>
+                </View>
+              </View>
+            );
           }
-          const cellDate = new Date(viewYear, viewMonth, day);
+          const cellDate = new Date(viewYear, viewMonth, cell.day);
           const iso = toISODate(cellDate);
           const isPast = cellDate < today;
           const isToday = cellDate.getTime() === today.getTime();
@@ -118,26 +142,31 @@ export function CalendarPicker({
           return (
             <TouchableOpacity
               key={iso}
-              style={[
-                styles.dayCell,
-                isToday && styles.todayCell,
-                isInRange && styles.inRangeCell,
-                isEndpoint && styles.selectedCell,
-              ]}
+              style={styles.dayCell}
               disabled={isPast}
               onPress={() => onSelectDate(iso)}
               activeOpacity={0.6}
             >
-              <Text
+              <View
                 style={[
-                  styles.dayText,
-                  isPast && styles.pastDayText,
-                  isInRange && styles.inRangeDayText,
-                  isEndpoint && styles.selectedDayText,
+                  styles.dayCircle,
+                  isToday && styles.todayCircle,
+                  isInRange && styles.inRangeCircle,
+                  isEndpoint && styles.selectedCircle,
                 ]}
               >
-                {day}
-              </Text>
+                <Text
+                  style={[
+                    styles.dayText,
+                    isPast && styles.pastDayText,
+                    isToday && styles.todayText,
+                    isInRange && styles.inRangeDayText,
+                    isEndpoint && styles.selectedDayText,
+                  ]}
+                >
+                  {cell.day}
+                </Text>
+              </View>
             </TouchableOpacity>
           );
         })}
@@ -146,16 +175,20 @@ export function CalendarPicker({
   );
 }
 
-const styles = StyleSheet.create({
+const DAY_CIRCLE = 40;
+
+const makeStyles = (COLORS: ThemeColors) => StyleSheet.create({
   container: {
-    ...CARD,
-    padding: SPACING.md,
+    ...cardStyle(COLORS),
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.md,
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: SPACING.sm,
+    justifyContent: 'center',
+    gap: SPACING.lg,
+    marginBottom: SPACING.md,
   },
   navButton: {
     width: 36,
@@ -165,7 +198,7 @@ const styles = StyleSheet.create({
   },
   navText: {
     fontSize: FONT_SIZE.xl,
-    color: COLORS.primary,
+    color: COLORS.text,
     fontWeight: '700',
   },
   navDisabled: {
@@ -173,20 +206,27 @@ const styles = StyleSheet.create({
   },
   monthLabel: {
     fontFamily: FONTS.heavy,
-    fontSize: FONT_SIZE.md,
+    fontSize: FONT_SIZE.lg,
     color: COLORS.text,
-    textTransform: 'capitalize',
+    letterSpacing: 1,
+  },
+  yearLabel: {
+    fontFamily: FONTS.body,
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.textMuted,
+    letterSpacing: 0.5,
   },
   weekRow: {
     flexDirection: 'row',
-    marginBottom: SPACING.xs,
+    marginBottom: SPACING.sm,
   },
   weekday: {
     flex: 1,
     textAlign: 'center',
     fontSize: FONT_SIZE.xs,
-    fontWeight: '600',
+    fontFamily: FONTS.body,
     color: COLORS.textMuted,
+    opacity: 0.7,
   },
   grid: {
     flexDirection: 'row',
@@ -194,36 +234,48 @@ const styles = StyleSheet.create({
   },
   dayCell: {
     width: `${100 / 7}%`,
-    aspectRatio: 1,
+    paddingVertical: SPACING.sm,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  dayCircle: {
+    width: DAY_CIRCLE,
+    height: DAY_CIRCLE,
     borderRadius: BORDER_RADIUS.full,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  todayCell: {
-    borderWidth: 1.5,
-    borderColor: COLORS.primary,
+  todayCircle: {
+    backgroundColor: COLORS.border,
   },
-  selectedCell: {
+  inRangeCircle: {
+    backgroundColor: COLORS.primaryTint,
+  },
+  selectedCircle: {
     backgroundColor: COLORS.primary,
   },
-  inRangeCell: {
-    backgroundColor: `${COLORS.primary}26`,   // primary at ~15% opacity
-    borderRadius: 0,
-  },
-  inRangeDayText: {
-    color: COLORS.primary,
-    fontWeight: '600',
-  },
   dayText: {
-    fontSize: FONT_SIZE.sm,
+    fontSize: FONT_SIZE.md,
+    fontFamily: FONTS.body,
     color: COLORS.text,
-    fontWeight: '500',
+  },
+  todayText: {
+    fontFamily: FONTS.heavy,
   },
   pastDayText: {
     color: COLORS.border,
   },
+  adjacentDayText: {
+    fontSize: FONT_SIZE.md,
+    fontFamily: FONTS.body,
+    color: COLORS.border,
+  },
+  inRangeDayText: {
+    fontFamily: FONTS.heavy,
+    color: COLORS.primaryDark,
+  },
   selectedDayText: {
+    fontFamily: FONTS.heavy,
     color: COLORS.surface,
-    fontWeight: '700',
   },
 });

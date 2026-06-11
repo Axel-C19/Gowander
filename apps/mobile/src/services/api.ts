@@ -2,7 +2,7 @@ import axios, { AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import * as SecureStore from 'expo-secure-store';
 import type { ApiError } from '@gowander/shared-types';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000';
+export const BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000';
 const TOKEN_KEY = 'gowander_access_token';
 
 export const apiClient = axios.create({
@@ -47,3 +47,9 @@ export const tokenStorage = {
   get: () => SecureStore.getItemAsync(TOKEN_KEY),
   remove: () => SecureStore.deleteItemAsync(TOKEN_KEY),
 };
+
+/** Backend-relative paths (e.g. "/static/avatars/x.jpg") → absolute URL. */
+export function toAbsoluteUrl(path: string | null | undefined): string | null {
+  if (!path) return null;
+  return path.startsWith('/') ? `${BASE_URL}${path}` : path;
+}

@@ -1,7 +1,8 @@
 import React from 'react';
 import { View, Pressable, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { COLORS, SPACING, BORDER_RADIUS } from '../../constants';
+import { SPACING, BORDER_RADIUS, type ThemeColors } from '../../constants';
+import { useThemeColors } from '../../hooks/useTheme';
 
 interface SwipeButtonsProps {
   onAccept: () => void;
@@ -25,6 +26,7 @@ function VerdictButton({
   edgeColor: string;
   icon: 'close' | 'checkmark';
 }) {
+  const styles = useStyles();
   return (
     <Pressable
       onPress={onPress}
@@ -46,6 +48,8 @@ function VerdictButton({
 }
 
 export function SwipeButtons({ onAccept, onReject, disabled }: SwipeButtonsProps) {
+  const COLORS = useThemeColors();
+  const styles = useStyles();
   return (
     <View style={styles.container}>
       <VerdictButton
@@ -66,7 +70,12 @@ export function SwipeButtons({ onAccept, onReject, disabled }: SwipeButtonsProps
   );
 }
 
-const styles = StyleSheet.create({
+function useStyles() {
+  const COLORS = useThemeColors();
+  return React.useMemo(() => makeStyles(COLORS), [COLORS]);
+}
+
+const makeStyles = (COLORS: ThemeColors) => StyleSheet.create({
   container: {
     flexDirection: 'row',
     justifyContent: 'center',

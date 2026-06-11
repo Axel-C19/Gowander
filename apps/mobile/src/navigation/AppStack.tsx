@@ -8,7 +8,12 @@ import { useAuthStore } from '../store/slices/auth.slice';
 import { SwipeDeckScreen } from '../screens/swipe/SwipeDeckScreen';
 import { ItinerarySummaryScreen } from '../screens/itinerary/ItinerarySummaryScreen';
 import { MapViewScreen } from '../screens/itinerary/MapViewScreen';
-import { COLORS, FONTS } from '../constants';
+import { TripDetailScreen } from '../screens/itinerary/TripDetailScreen';
+import { ChatScreen } from '../screens/social/ChatScreen';
+import { ShareTripScreen } from '../screens/social/ShareTripScreen';
+import { FONTS } from '../constants';
+import { useThemeColors } from '../hooks/useTheme';
+import { useT } from '../i18n';
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
@@ -17,6 +22,8 @@ export function AppStack() {
   // right after registering or on first login. Editable later via profile.
   const user = useAuthStore((s) => s.user);
   const needsOnboarding = !user?.preferences?.length;
+  const COLORS = useThemeColors();
+  const t = useT();
 
   return (
     <Stack.Navigator
@@ -31,7 +38,7 @@ export function AppStack() {
       <Stack.Screen
         name="Preferences"
         component={PreferencesScreen}
-        options={{ title: 'Travel interests' }}
+        options={{ title: t('titleInterests') }}
       />
       <Stack.Screen
         name="Main"
@@ -41,22 +48,37 @@ export function AppStack() {
       <Stack.Screen
         name="TripDate"
         component={TripDateScreen}
-        options={{ title: 'Travel date' }}
+        options={{ title: t('titleTravelDate') }}
       />
       <Stack.Screen
         name="SwipeDeck"
         component={SwipeDeckScreen}
-        options={{ title: 'Pick your spots' }}
+        options={{ title: t('titlePickSpots') }}
       />
       <Stack.Screen
         name="ItinerarySummary"
         component={ItinerarySummaryScreen}
-        options={{ title: 'Your itinerary' }}
+        options={{ title: t('titleYourItinerary') }}
       />
       <Stack.Screen
         name="MapView"
         component={MapViewScreen}
-        options={{ title: 'Route map', headerTransparent: true }}
+        options={{ title: t('titleRouteMap'), headerTransparent: true }}
+      />
+      <Stack.Screen
+        name="TripDetail"
+        component={TripDetailScreen}
+        options={{ title: 'Trip details' }}
+      />
+      <Stack.Screen
+        name="Chat"
+        component={ChatScreen}
+        options={{ title: t('titleChat') }}
+      />
+      <Stack.Screen
+        name="ShareTrip"
+        component={ShareTripScreen}
+        options={{ title: t('titleShareTrip') }}
       />
     </Stack.Navigator>
   );

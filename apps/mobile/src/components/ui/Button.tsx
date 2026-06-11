@@ -1,6 +1,7 @@
 import React from 'react';
 import { Pressable, Text, StyleSheet, type ViewStyle } from 'react-native';
-import { COLORS, FONTS, FONT_SIZE, BORDER_RADIUS, SPACING } from '../../constants';
+import { FONTS, FONT_SIZE, BORDER_RADIUS, SPACING, type ThemeColors } from '../../constants';
+import { useThemeColors } from '../../hooks/useTheme';
 
 type Variant = 'primary' | 'secondary' | 'success' | 'danger' | 'quiet';
 
@@ -12,13 +13,13 @@ interface ButtonProps {
   style?: ViewStyle;
 }
 
-const VARIANTS: Record<Variant, { bg: string; edge: string; fg: string; border?: string }> = {
-  primary: { bg: COLORS.primary, edge: COLORS.primaryDark, fg: '#FFFFFF' },
-  secondary: { bg: COLORS.secondary, edge: COLORS.secondaryDark, fg: '#FFFFFF' },
-  success: { bg: COLORS.success, edge: COLORS.successDark, fg: '#FFFFFF' },
-  danger: { bg: COLORS.surface, edge: COLORS.errorTint, fg: COLORS.error, border: COLORS.errorTint },
-  quiet: { bg: COLORS.surface, edge: COLORS.borderDark, fg: COLORS.primary, border: COLORS.border },
-};
+const makeVariants = (c: ThemeColors): Record<Variant, { bg: string; edge: string; fg: string; border?: string }> => ({
+  primary: { bg: c.primary, edge: c.primaryDark, fg: '#FFFFFF' },
+  secondary: { bg: c.secondary, edge: c.secondaryDark, fg: '#FFFFFF' },
+  success: { bg: c.success, edge: c.successDark, fg: '#FFFFFF' },
+  danger: { bg: c.surface, edge: c.errorTint, fg: c.error, border: c.errorTint },
+  quiet: { bg: c.surface, edge: c.borderDark, fg: c.primary, border: c.border },
+});
 
 const EDGE = 4;        // Resting bottom edge depth
 const EDGE_PRESSED = 1;
@@ -29,7 +30,8 @@ const EDGE_PRESSED = 1;
  * Total height stays constant so layouts never jump.
  */
 export function Button({ title, onPress, variant = 'primary', disabled, style }: ButtonProps) {
-  const v = VARIANTS[variant];
+  const COLORS = useThemeColors();
+  const v = makeVariants(COLORS)[variant];
 
   return (
     <Pressable

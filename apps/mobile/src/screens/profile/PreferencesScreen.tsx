@@ -14,9 +14,13 @@ import { useUpdatePreferences } from '../../hooks/useAuth';
 import { INTERESTS } from '@gowander/shared-constants';
 import { Ionicons } from '@expo/vector-icons';
 import { Button } from '../../components/ui/Button';
-import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, INTEREST_COLORS, INTEREST_ICONS } from '../../constants';
+import { FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, INTEREST_COLORS, INTEREST_ICONS, type ThemeColors } from '../../constants';
+import { useThemeColors } from '../../hooks/useTheme';
 
 export function PreferencesScreen() {
+    const COLORS = useThemeColors();
+    const styles = React.useMemo(() => makeStyles(COLORS), [COLORS]);
+
     const navigation = useNavigation<AppScreenNavigationProp>();
     const user = useAuthStore((s) => s.user);
     const updatePreferences = useUpdatePreferences();
@@ -111,7 +115,7 @@ export function PreferencesScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (COLORS: ThemeColors) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.background,

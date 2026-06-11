@@ -4,7 +4,9 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import type { TripDateRouteProp, AppScreenNavigationProp } from '../../types/navigation';
 import { CalendarPicker } from '../../components/ui/CalendarPicker';
 import { Button } from '../../components/ui/Button';
-import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, type ThemeColors } from '../../constants';
+import { useThemeColors } from '../../hooks/useTheme';
+import { useT } from '../../i18n';
 
 function formatShort(iso: string): string {
     const [y, m, d] = iso.split('-').map(Number);
@@ -16,6 +18,10 @@ function formatShort(iso: string): string {
 }
 
 export function TripDateScreen() {
+    const COLORS = useThemeColors();
+    const styles = React.useMemo(() => makeStyles(COLORS), [COLORS]);
+    const t = useT();
+
     const route = useRoute<TripDateRouteProp>();
     const navigation = useNavigation<AppScreenNavigationProp>();
     const { destination } = route.params;
@@ -54,13 +60,13 @@ export function TripDateScreen() {
     return (
         <View style={styles.container}>
             <View style={styles.header}>
-                <Text style={styles.title}>When is your trip?</Text>
+                <Text style={styles.title}>{t('whenIsYourTrip')}</Text>
                 <Text style={styles.subtitle}>
                     {!startDate
-                        ? `Pick your arrival day in ${destination.city}.`
+                        ? `${t('pickArrival')} ${destination.city}.`
                         : !endDate
-                            ? 'Now pick your departure day (tap the same day for a one-day trip).'
-                            : `${formatShort(startDate)} → ${formatShort(endDate)} · ${tripDays} day${tripDays > 1 ? 's' : ''}`}
+                            ? t('pickDeparture')
+                            : `${formatShort(startDate)} → ${formatShort(endDate)} · ${tripDays} ${tripDays > 1 ? t('days') : t('day')}`}
                 </Text>
             </View>
 
@@ -73,7 +79,7 @@ export function TripDateScreen() {
             {startDate && endDate && (
                 <View style={styles.rangePill}>
                     <Text style={styles.rangePillText}>
-                        📅 {formatShort(startDate)} – {formatShort(endDate)} · {tripDays} day{tripDays > 1 ? 's' : ''}
+                        📅 {formatShort(startDate)} – {formatShort(endDate)} · {tripDays} {tripDays > 1 ? t('days') : t('day')}
                     </Text>
                 </View>
             )}
@@ -82,10 +88,10 @@ export function TripDateScreen() {
 
             <Button
                 title={!startDate
-                    ? 'Pick your arrival day'
+                    ? t('pickArrivalBtn')
                     : !endDate
-                        ? 'Pick your departure day'
-                        : 'Lock in my dates'}
+                        ? t('pickDepartureBtn')
+                        : t('lockDates')}
                 onPress={handleContinue}
                 disabled={!startDate || !endDate}
             />
@@ -93,7 +99,7 @@ export function TripDateScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (COLORS: ThemeColors) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.background,

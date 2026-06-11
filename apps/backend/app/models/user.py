@@ -12,6 +12,11 @@ class User(Base, UUIDMixin, TimestampMixin):
     is_active = Column(Boolean, default=True, nullable=False)
     # Travel interest categories, e.g. ["culture", "gastronomy"]. NULL = never asked.
     preferences = Column(JSON, nullable=True)
+    # "/static/avatars/<file>" for uploads, or an external URL (Google photo)
+    avatar_url = Column(String(500), nullable=True)
+    bio = Column(String(500), nullable=True)
+    # Google account `sub` claim when the user signs in with Google
+    google_id = Column(String(255), unique=True, nullable=True, index=True)
 
     swipe_sessions = relationship("SwipeSession", back_populates="user", lazy="dynamic")
     itineraries = relationship("Itinerary", back_populates="user", lazy="dynamic")

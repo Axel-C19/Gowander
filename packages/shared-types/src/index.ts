@@ -15,6 +15,8 @@ export interface UserProfile {
   email: string;
   full_name: string;
   preferences: string[] | null;
+  avatar_url: string | null;
+  bio: string | null;
   created_at: string;
 }
 
@@ -93,6 +95,7 @@ export interface SwipeSession {
 // ─── Itinerary ────────────────────────────────────────────────────────────
 export interface Itinerary {
   id: string;
+  user_id: string;        // Owner
   title: string;
   destination: Destination;
   date: string;           // Trip start date, ISO "2025-06-01"
@@ -100,9 +103,14 @@ export interface Itinerary {
   start_time: string;     // "09:00"
   total_duration_minutes: number;
   is_saved: boolean;
+  is_public: boolean;
   stops: ItineraryStop[];
   created_at: string;
   updated_at: string;
+  // Rating summary — populated for public trips
+  avg_rating: number | null;
+  ratings_count: number;
+  my_rating: number | null;
 }
 
 export interface ItineraryStop {
@@ -134,4 +142,44 @@ export interface PaginatedResponse<T> {
   page: number;
   per_page: number;
   has_next: boolean;
+}
+
+// ─── Social ───────────────────────────────────────────────────────────────
+export interface UserPublic {
+  id: string;
+  full_name: string;
+  email: string;
+  avatar_url?: string | null;
+  bio?: string | null;
+}
+
+export interface FriendRequest {
+  id: string;
+  requester: UserPublic;
+  created_at: string;
+}
+
+export interface Friend {
+  friendship_id: string;
+  user: UserPublic;
+}
+
+export interface SharedTripPreview {
+  id: string;
+  title: string;
+  total_duration_minutes: number;
+}
+
+export interface Message {
+  id: string;
+  sender_id: string;
+  recipient_id: string;
+  text: string | null;
+  itinerary: SharedTripPreview | null;
+  created_at: string;
+}
+
+export interface PublicTrip {
+  itinerary: Itinerary;
+  owner: UserPublic;
 }

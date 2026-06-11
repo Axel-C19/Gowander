@@ -56,6 +56,61 @@ export function useUpdatePreferences() {
     });
 }
 
+export function useUpdateProfile() {
+    const setUser = useAuthStore((s) => s.setUser);
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (payload: { full_name?: string; bio?: string }) =>
+            authService.updateProfile(payload),
+        onSuccess: (user) => {
+            setUser(user);
+            queryClient.setQueryData(QUERY_KEYS.ME, user);
+        },
+    });
+}
+
+export function useUploadAvatar() {
+    const setUser = useAuthStore((s) => s.setUser);
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (image: { uri: string; mimeType: string }) =>
+            authService.uploadAvatar(image),
+        onSuccess: (user) => {
+            setUser(user);
+            queryClient.setQueryData(QUERY_KEYS.ME, user);
+        },
+    });
+}
+
+export function useGoogleLogin() {
+    const setUser = useAuthStore((s) => s.setUser);
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (idToken: string) => authService.googleLogin(idToken),
+        onSuccess: (response) => {
+            setUser(response.user);
+            queryClient.setQueryData(QUERY_KEYS.ME, response.user);
+        },
+    });
+}
+
+/** Log in with a ready-made GoWander JWT (server-side Google flow). */
+export function useTokenLogin() {
+    const setUser = useAuthStore((s) => s.setUser);
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: (token: string) => authService.loginWithToken(token),
+        onSuccess: (user) => {
+            setUser(user);
+            queryClient.setQueryData(QUERY_KEYS.ME, user);
+        },
+    });
+}
+
 export function useLogout() {
     const clearAuth = useAuthStore((s) => s.clearAuth);
     const queryClient = useQueryClient();

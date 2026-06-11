@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
 from app.core.config import get_settings
 from app.api.v1.router import api_router
@@ -32,6 +33,10 @@ app.add_middleware(
 )
 
 app.include_router(api_router)
+
+# User uploads (avatars). Created on import so StaticFiles can mount.
+settings.uploads_dir.mkdir(parents=True, exist_ok=True)
+app.mount("/static", StaticFiles(directory=str(settings.uploads_dir)), name="static")
 
 
 @app.get("/health")

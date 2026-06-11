@@ -3,10 +3,14 @@ import { View, Text, StyleSheet } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
 import { useRoute } from '@react-navigation/native';
 import type { MapViewRouteProp } from '../../types/navigation';
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { SPACING, FONT_SIZE, BORDER_RADIUS, type ThemeColors } from '../../constants';
 import { formatTime } from '@gowander/shared-utils';
+import { useThemeColors } from '../../hooks/useTheme';
 
 export function MapViewScreen() {
+    const COLORS = useThemeColors();
+    const styles = React.useMemo(() => makeStyles(COLORS), [COLORS]);
+
   const route = useRoute<MapViewRouteProp>();
   const { itinerary } = route.params;
   const mapRef = useRef<MapView>(null);
@@ -81,7 +85,7 @@ export function MapViewScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (COLORS: ThemeColors) => StyleSheet.create({
   container: {
     flex: 1,
   },

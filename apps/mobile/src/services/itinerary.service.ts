@@ -45,6 +45,21 @@ export const itineraryService = {
         return data;
     },
 
+    async publish(id: string): Promise<Itinerary> {
+        const { data } = await apiClient.post<Itinerary>(ENDPOINTS.ITINERARY.PUBLISH(id));
+        return data;
+    },
+
+    async unpublish(id: string): Promise<Itinerary> {
+        const { data } = await apiClient.post<Itinerary>(ENDPOINTS.ITINERARY.UNPUBLISH(id));
+        return data;
+    },
+
+    async rate(id: string, stars: number): Promise<Itinerary> {
+        const { data } = await apiClient.post<Itinerary>(ENDPOINTS.ITINERARY.RATE(id), { stars });
+        return data;
+    },
+
     async delete(id: string): Promise<void> {
         await apiClient.delete(ENDPOINTS.ITINERARY.BY_ID(id));
     },

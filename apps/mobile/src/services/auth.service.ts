@@ -40,6 +40,40 @@ export const authService = {
         return data;
     },
 
+    async updateProfile(payload: { full_name?: string; bio?: string }): Promise<UserProfile> {
+        const { data } = await apiClient.put<UserProfile>(ENDPOINTS.AUTH.PROFILE, payload);
+        return data;
+    },
+
+    async uploadAvatar(image: { uri: string; mimeType: string }): Promise<UserProfile> {
+        const form = new FormData();
+        const ext = image.mimeType.split('/')[1] ?? 'jpg';
+        form.append('file', {
+            uri: image.uri,
+            name: `avatar.${ext}`,
+            type: image.mimeType,
+        } as unknown as Blob);
+        const { data } = await apiClient.post<UserProfile>(ENDPOINTS.AUTH.AVATAR, form, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+        });
+        return data;
+    },
+
+    async googleLogin(idToken: string): Promise<AuthResponse> {
+        const { data } = await apiClient.post<AuthResponse>(ENDPOINTS.AUTH.GOOGLE, {
+            id_token: idToken,
+        });
+        await tokenStorage.save(data.access_token);
+        return data;
+    },
+
+    /** Finish the server-side Google flow: store our JWT, fetch the user. */
+    async loginWithToken(token: string): Promise<UserProfile> {
+        await tokenStorage.save(token);
+        const { data } = await apiClient.get<UserProfile>(ENDPOINTS.AUTH.ME);
+        return data;
+    },
+
     async logout(): Promise<void> {
         await tokenStorage.remove();
     },

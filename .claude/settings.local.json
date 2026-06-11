@@ -21,7 +21,24 @@
       "Bash(.venv/bin/ruff check *)",
       "Bash(PYTHONPATH=. .venv/bin/python scripts/fetch_images.py)",
       "Bash(PYTHONPATH=. .venv/bin/python -c ' *)",
-      "Bash(PYTHONPATH=. .venv/bin/python scripts/fetch_images_pass2.py)"
+      "Bash(PYTHONPATH=. .venv/bin/python scripts/fetch_images_pass2.py)",
+      "Bash(.venv/bin/pytest tests/integration/test_social.py::TestTripSharing::test_cannot_share_someone_elses_trip -q)",
+      "Bash(sed -n 85,150p /Users/axelcaldera/Documents/webdev/gowander/apps/backend/tests/integration/test_social.py)",
+      "Bash(sed -n 60,90p /Users/axelcaldera/Documents/webdev/gowander/apps/backend/tests/conftest.py)",
+      "Bash(python -m pytest tests/integration/test_ratings.py tests/integration/test_social.py tests/integration/test_itinerary_save.py -q)",
+      "Bash(.venv/bin/python -m pytest tests/integration/test_ratings.py tests/integration/test_social.py tests/integration/test_itinerary_save.py -q)",
+      "Bash(.venv/bin/python -c ' *)",
+      "Bash(.venv/bin/python -m pytest -q)",
+      "Bash(sed -n 10,30p /Users/axelcaldera/Documents/webdev/gowander/packages/shared-types/src/index.ts)",
+      "Bash(sed -n 140,165p /Users/axelcaldera/Documents/webdev/gowander/packages/shared-types/src/index.ts)",
+      "Bash(sed -n 1,20p /Users/axelcaldera/Documents/webdev/gowander/apps/backend/app/schemas/social.py)",
+      "Bash(.venv/bin/python -m pytest tests/integration/test_profile.py -q)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(echo \"tsc exit: $?\")",
+      "Bash(brew --version)",
+      "Bash(brew install *)",
+      "Bash(cloudflared --version)",
+      "Bash(grep -rn \"import.*[{,] *COLORS[,}]\" apps/mobile/src --include=\"*.tsx\" --include=\"*.ts\")"
     ]
   }
 }

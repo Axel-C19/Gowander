@@ -21,7 +21,40 @@ class UserOut(BaseModel):
     email: str
     full_name: str
     preferences: Optional[list[str]] = None
+    avatar_url: Optional[str] = None
+    bio: Optional[str] = None
     created_at: datetime
+
+
+class UpdateProfileRequest(BaseModel):
+    full_name: Optional[str] = None
+    bio: Optional[str] = None
+
+    @field_validator("full_name")
+    @classmethod
+    def validate_name(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        v = v.strip()
+        if not v:
+            raise ValueError("Name can't be empty")
+        if len(v) > 255:
+            raise ValueError("Name is too long")
+        return v
+
+    @field_validator("bio")
+    @classmethod
+    def validate_bio(cls, v: Optional[str]) -> Optional[str]:
+        if v is None:
+            return v
+        v = v.strip()
+        if len(v) > 500:
+            raise ValueError("Bio must be 500 characters or fewer")
+        return v
+
+
+class GoogleLoginRequest(BaseModel):
+    id_token: str
 
 
 class UpdatePreferencesRequest(BaseModel):

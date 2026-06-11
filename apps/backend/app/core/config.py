@@ -41,6 +41,16 @@ class Settings(BaseSettings):
     GOOGLE_PLACES_API_KEY: str = ""
     GOOGLE_MAPS_API_KEY: str = ""
 
+    # OAuth client IDs accepted as `aud` on Google ID tokens (comma-separated:
+    # web, iOS and Android client IDs). Empty = Google sign-in disabled.
+    GOOGLE_OAUTH_CLIENT_IDS: str = ""
+    # Web client secret — required for the server-side OAuth flow (Expo Go)
+    GOOGLE_OAUTH_CLIENT_SECRET: str = ""
+    # Public https base URL of this API (e.g. an ngrok tunnel in dev).
+    # Google redirects the OAuth callback here, so it must be reachable
+    # from the phone's browser and registered in the Google Console.
+    PUBLIC_BASE_URL: str = ""
+
     ALLOWED_ORIGINS: list[str] = [
         "http://localhost:19006",
         "http://localhost:8081",
@@ -50,6 +60,21 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.ENVIRONMENT == "production"
+
+    @property
+    def google_client_ids(self) -> list[str]:
+        return [s.strip() for s in self.GOOGLE_OAUTH_CLIENT_IDS.split(",") if s.strip()]
+
+    @property
+    def google_web_client_id(self) -> str:
+        """The web client drives the server-side flow; it's listed first."""
+        ids = self.google_client_ids
+        return ids[0] if ids else ""
+
+    @property
+    def uploads_dir(self) -> Path:
+        # apps/backend/uploads — served at /static
+        return Path(__file__).resolve().parents[2] / "uploads"
 
 
 @lru_cache

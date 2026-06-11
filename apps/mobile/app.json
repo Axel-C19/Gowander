@@ -2,6 +2,7 @@
   "expo": {
     "name": "GoWander",
     "slug": "gowander",
+    "scheme": "gowander",
     "version": "0.1.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -32,7 +33,14 @@
     },
     "plugins": [
       "expo-secure-store",
-      "expo-font"
+      "expo-font",
+      "expo-web-browser",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "GoWander needs access to your photos so you can set a profile picture."
+        }
+      ]
     ],
     "extra": {
       "eas": {

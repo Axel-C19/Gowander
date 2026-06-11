@@ -8,6 +8,10 @@ export const ENDPOINTS = {
         REGISTER: `${API_BASE}/auth/register`,   // ← add this line
         ME: `${API_BASE}/auth/me`,
         PREFERENCES: `${API_BASE}/auth/me/preferences`,
+        PROFILE: `${API_BASE}/auth/me/profile`,
+        AVATAR: `${API_BASE}/auth/me/avatar`,
+        GOOGLE: `${API_BASE}/auth/google`,
+        GOOGLE_START: `${API_BASE}/auth/google/start`,
         REFRESH: `${API_BASE}/auth/refresh`,
     },
   DESTINATIONS: {
@@ -28,7 +32,21 @@ export const ENDPOINTS = {
     LIST: `${API_BASE}/itinerary`,
     BY_ID: (id: string) => `${API_BASE}/itinerary/${id}`,
     SAVE: (id: string) => `${API_BASE}/itinerary/${id}/save`,
+    PUBLISH: (id: string) => `${API_BASE}/itinerary/${id}/publish`,
+    UNPUBLISH: (id: string) => `${API_BASE}/itinerary/${id}/unpublish`,
+    RATE: (id: string) => `${API_BASE}/itinerary/${id}/rate`,
   },
+  SOCIAL: {
+    USER_SEARCH: `${API_BASE}/social/users/search`,
+    FRIEND_REQUEST: `${API_BASE}/social/friends/request`,
+    FRIEND_REQUESTS: `${API_BASE}/social/friends/requests`,
+    ACCEPT_REQUEST: (id: string) => `${API_BASE}/social/friends/requests/${id}/accept`,
+    DECLINE_REQUEST: (id: string) => `${API_BASE}/social/friends/requests/${id}`,
+    FRIENDS: `${API_BASE}/social/friends`,
+    MESSAGES: `${API_BASE}/social/messages`,
+    CONVERSATION: (userId: string) => `${API_BASE}/social/messages/${userId}`,
+  },
+  EXPLORE: `${API_BASE}/explore`,
 } as const;
 
 // ─── Navigation ───────────────────────────────────────────────────────────

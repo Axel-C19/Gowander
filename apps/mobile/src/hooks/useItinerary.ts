@@ -61,6 +61,32 @@ export function useSaveItinerary() {
     });
 }
 
+export function usePublishItinerary() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, publish }: { id: string; publish: boolean }) =>
+            publish ? itineraryService.publish(id) : itineraryService.unpublish(id),
+        onSuccess: (itinerary: Itinerary) => {
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ITINERARIES });
+            queryClient.invalidateQueries({ queryKey: ['explore'] });
+            queryClient.setQueryData(QUERY_KEYS.ITINERARY(String(itinerary.id)), itinerary);
+        },
+    });
+}
+
+export function useRateItinerary() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, stars }: { id: string; stars: number }) =>
+            itineraryService.rate(id, stars),
+        onSuccess: (itinerary: Itinerary) => {
+            // Re-rank the explore feed and refresh the trip detail
+            queryClient.invalidateQueries({ queryKey: ['explore'] });
+            queryClient.setQueryData(QUERY_KEYS.ITINERARY(String(itinerary.id)), itinerary);
+        },
+    });
+}
+
 export function useDeleteItinerary() {
     const queryClient = useQueryClient();
     return useMutation({

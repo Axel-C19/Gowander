@@ -9,7 +9,9 @@ import {
     Nunito_800ExtraBold,
 } from '@expo-google-fonts/nunito';
 import { RootNavigator } from './src/navigation';
-import { COLORS, FONTS } from './src/constants';
+import { COLORS, FONTS, THEMES } from './src/constants';
+import { useSettingsStore } from './src/store/slices/settings.slice';
+import { useIsDark } from './src/hooks/useTheme';
 
 // Make Nunito the default for every <Text>/<TextInput> without touching
 // each StyleSheet. forwardRef components expose .render, so we wrap it.
@@ -38,13 +40,30 @@ const queryClient = new QueryClient({
     },
 });
 
+function ThemedApp() {
+    const isDark = useIsDark();
+    const palette = THEMES[isDark ? 'dark' : 'light'];
+    return (
+        <>
+            <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={palette.background} />
+            <RootNavigator />
+        </>
+    );
+}
+
 export default function App() {
     const [fontsLoaded] = useFonts({
         Nunito_700Bold,
         Nunito_800ExtraBold,
     });
+    const hydrated = useSettingsStore((s) => s.hydrated);
+    const hydrate = useSettingsStore((s) => s.hydrate);
 
-    if (!fontsLoaded) {
+    React.useEffect(() => {
+        hydrate();
+    }, []);
+
+    if (!fontsLoaded || !hydrated) {
         return (
             <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.background }}>
                 <ActivityIndicator size="large" color={COLORS.primary} />
@@ -55,8 +74,7 @@ export default function App() {
     return (
         <GestureHandlerRootView style={{ flex: 1 }}>
             <QueryClientProvider client={queryClient}>
-                <StatusBar style="dark" />
-                <RootNavigator />
+                <ThemedApp />
             </QueryClientProvider>
         </GestureHandlerRootView>
     );

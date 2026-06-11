@@ -13,13 +13,17 @@ import { useSwipeSession } from '../../hooks/useSwipe';
 import { useSwipeStore } from '../../store/slices/swipe.slice';
 import { SwipeCard } from '../../components/swipe/SwipeCard';
 import { SwipeButtons } from '../../components/swipe/SwipeButtons';
-import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, type ThemeColors } from '../../constants';
 import type { SwipeDecision } from '@gowander/shared-types';
 import { isPlaceOpenInRange } from '@gowander/shared-utils';
 import { INTERESTS } from '@gowander/shared-constants';
 import { useAuthStore } from '../../store/slices/auth.slice';
+import { useThemeColors } from '../../hooks/useTheme';
 
 export function SwipeDeckScreen() {
+    const COLORS = useThemeColors();
+    const styles = React.useMemo(() => makeStyles(COLORS), [COLORS]);
+
 
     const route = useRoute<SwipeDeckRouteProp>();
     const navigation = useNavigation<AppScreenNavigationProp>();
@@ -203,7 +207,7 @@ export function SwipeDeckScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (COLORS: ThemeColors) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.background,

@@ -1,6 +1,6 @@
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import type { RouteProp } from '@react-navigation/native';
-import type { Destination, Itinerary } from '@gowander/shared-types';
+import type { Destination, Itinerary, UserPublic } from '@gowander/shared-types';
 
 export type AuthStackParamList = {
     Login: undefined;
@@ -9,7 +9,9 @@ export type AuthStackParamList = {
 
 export type MainTabsParamList = {
     MyTrips: undefined;
+    Social: undefined;
     WhereTo: undefined;
+    Explore: undefined;
     Profile: undefined;
 };
 
@@ -33,6 +35,16 @@ export type AppStackParamList = {
     MapView: {
         itinerary: Itinerary;
     };
+    TripDetail: {
+        itinerary: Itinerary;
+    };
+    Chat: {
+        friend: UserPublic;
+    };
+    ShareTrip: {
+        itineraryId: string;
+        itineraryTitle: string;
+    };
 };
 
 export type RootStackParamList = {
@@ -47,3 +59,6 @@ export type TripDateRouteProp = RouteProp<AppStackParamList, 'TripDate'>;
 export type SwipeDeckRouteProp = RouteProp<AppStackParamList, 'SwipeDeck'>;
 export type ItinerarySummaryRouteProp = RouteProp<AppStackParamList, 'ItinerarySummary'>;
 export type MapViewRouteProp = RouteProp<AppStackParamList, 'MapView'>;
+export type TripDetailRouteProp = RouteProp<AppStackParamList, 'TripDetail'>;
+export type ChatRouteProp = RouteProp<AppStackParamList, 'Chat'>;
+export type ShareTripRouteProp = RouteProp<AppStackParamList, 'ShareTrip'>;

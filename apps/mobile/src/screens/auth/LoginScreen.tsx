@@ -10,17 +10,61 @@ import {
     Platform,
     Alert,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import * as WebBrowser from 'expo-web-browser';
+import * as Linking from 'expo-linking';
 import { useNavigation } from '@react-navigation/native';
-import { useLogin } from '../../hooks/useAuth';
+import { ENDPOINTS } from '@gowander/shared-constants';
+import { useLogin, useTokenLogin } from '../../hooks/useAuth';
+import { BASE_URL } from '../../services/api';
 import type { AuthScreenNavigationProp } from '../../types/navigation';
-import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, type ThemeColors } from '../../constants';
 import { Button } from '../../components/ui/Button';
+import { useThemeColors } from '../../hooks/useTheme';
+
+// Finish any pending OAuth redirect when the app regains focus
+WebBrowser.maybeCompleteAuthSession();
 
 export function LoginScreen() {
+    const COLORS = useThemeColors();
+    const styles = React.useMemo(() => makeStyles(COLORS), [COLORS]);
+
     const navigation = useNavigation<AuthScreenNavigationProp>();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const login = useLogin();
+    const googleLogin = useTokenLogin();
+
+    // Server-side OAuth: the backend talks to Google (Expo Go's exp://
+    // redirect is rejected by Google), then deep-links back with our JWT.
+    async function handleGoogleLogin() {
+        const returnUrl = Linking.createURL('google-auth');
+        const startUrl =
+            `${BASE_URL}${ENDPOINTS.AUTH.GOOGLE_START}` +
+            `?return_url=${encodeURIComponent(returnUrl)}`;
+
+        const result = await WebBrowser.openAuthSessionAsync(startUrl, returnUrl);
+        if (result.type !== 'success' || !result.url) return; // user cancelled
+
+        const { queryParams } = Linking.parse(result.url);
+        const token = typeof queryParams?.token === 'string' ? queryParams.token : null;
+        const error = typeof queryParams?.error === 'string' ? queryParams.error : null;
+
+        if (!token) {
+            if (error && error !== 'access_denied' && error !== 'cancelled') {
+                Alert.alert('Google sign-in failed', error);
+            }
+            return;
+        }
+        try {
+            await googleLogin.mutateAsync(token);
+        } catch (err) {
+            Alert.alert(
+                'Google sign-in failed',
+                err instanceof Error ? err.message : 'Please try again.',
+            );
+        }
+    }
 
     async function handleLogin() {
         if (!email.trim() || !password.trim()) {
@@ -75,6 +119,28 @@ export function LoginScreen() {
                         style={{ marginTop: SPACING.sm }}
                     />
 
+                    <View style={styles.dividerRow}>
+                        <View style={styles.dividerLine} />
+                        <Text style={styles.dividerText}>or</Text>
+                        <View style={styles.dividerLine} />
+                    </View>
+
+                    <TouchableOpacity
+                        style={styles.googleButton}
+                        onPress={handleGoogleLogin}
+                        disabled={login.isPending || googleLogin.isPending}
+                        activeOpacity={0.8}
+                    >
+                        {googleLogin.isPending ? (
+                            <ActivityIndicator color={COLORS.text} />
+                        ) : (
+                            <>
+                                <Ionicons name="logo-google" size={18} color={COLORS.text} />
+                                <Text style={styles.googleButtonText}>Continue with Google</Text>
+                            </>
+                        )}
+                    </TouchableOpacity>
+
                     <TouchableOpacity
                         style={styles.registerLink}
                         onPress={() => navigation.navigate('Register')}
@@ -91,7 +157,7 @@ export function LoginScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (COLORS: ThemeColors) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.background,
@@ -142,6 +208,38 @@ const styles = StyleSheet.create({
         color: COLORS.surface,
         fontSize: FONT_SIZE.md,
         fontWeight: '600',
+    },
+    dividerRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: SPACING.sm,
+    },
+    dividerLine: {
+        flex: 1,
+        height: 1.5,
+        backgroundColor: COLORS.border,
+    },
+    dividerText: {
+        fontSize: FONT_SIZE.sm,
+        color: COLORS.textMuted,
+    },
+    googleButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: SPACING.sm,
+        height: 52,
+        backgroundColor: COLORS.surface,
+        borderWidth: 2,
+        borderColor: COLORS.border,
+        borderBottomWidth: 4,
+        borderBottomColor: COLORS.borderDark,
+        borderRadius: BORDER_RADIUS.lg,
+    },
+    googleButtonText: {
+        fontFamily: FONTS.heavy,
+        fontSize: FONT_SIZE.md,
+        color: COLORS.text,
     },
     registerLink: {
         alignItems: 'center',

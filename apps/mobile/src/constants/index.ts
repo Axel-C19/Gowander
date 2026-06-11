@@ -2,7 +2,7 @@
 // Orange = adventure anchor; sky blue = complementary travel accent.
 // Green/red are RESERVED for swipe verdict + destructive actions only.
 
-export const COLORS = {
+const LIGHT_COLORS = {
   primary: '#FF7A00',        // Sunset orange
   primaryDark: '#CC5F00',    // 3D button bottom edge
   primaryTint: '#FFE8D1',    // Pastel orange fill (chips, icon circles)
@@ -27,6 +27,43 @@ export const COLORS = {
   swipeReject: '#FF4B4B',
   cardShadow: 'rgba(61, 51, 41, 0.08)',
 } as const;
+
+// Warm "midnight journal" dark counterpart of the light palette
+const DARK_COLORS: typeof LIGHT_COLORS = {
+  primary: '#FF8A1F',
+  primaryDark: '#C96A00',
+  primaryTint: '#4A2F14',
+  secondary: '#3DBDF8',
+  secondaryDark: '#1899D6',
+  secondaryTint: '#103A4F',
+  background: '#1A140E',
+  surface: '#262019',
+  text: '#F5EDE3',
+  textMuted: '#A89A8A',
+  border: '#3A3128',
+  borderDark: '#141008',
+  success: '#6EDC1A',
+  successDark: '#46A302',
+  successTint: '#1F3310',
+  error: '#FF5C5C',
+  errorDark: '#D63B3B',
+  errorTint: '#402020',
+  warning: '#FFC800',
+  warningTint: '#3D3417',
+  swipeAccept: '#6EDC1A',
+  swipeReject: '#FF5C5C',
+  cardShadow: 'rgba(0, 0, 0, 0.4)',
+};
+
+export type ThemeColors = typeof LIGHT_COLORS;
+export const THEMES: Record<'light' | 'dark', ThemeColors> = {
+  light: LIGHT_COLORS,
+  dark: DARK_COLORS,
+};
+
+// Static export kept for non-component modules; components should use
+// useThemeColors() so they react to the appearance setting.
+export const COLORS = LIGHT_COLORS;
 
 export const FONTS = {
   body: 'Nunito_700Bold',
@@ -61,14 +98,16 @@ export const BORDER_RADIUS = {
 } as const;
 
 // Game-tile card chrome: chunky border + thicker bottom edge, no shadows
-export const CARD = {
+export const cardStyle = (c: ThemeColors) => ({
   borderWidth: 2,
   borderBottomWidth: 4,
-  borderColor: COLORS.border,
-  borderBottomColor: COLORS.borderDark,
-  backgroundColor: COLORS.surface,
+  borderColor: c.border,
+  borderBottomColor: c.borderDark,
+  backgroundColor: c.surface,
   borderRadius: BORDER_RADIUS.lg,
-} as const;
+} as const);
+
+export const CARD = cardStyle(LIGHT_COLORS);
 
 // Per-interest tint pairs: pastel fill + dark same-hue text (never black-on-pastel)
 export const INTEREST_COLORS: Record<string, { bg: string; fg: string }> = {

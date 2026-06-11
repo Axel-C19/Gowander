@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal, Optional
 import uuid
 import datetime as dt
@@ -34,6 +34,7 @@ class ItineraryOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: uuid.UUID
+    user_id: uuid.UUID
     title: str
     destination: DestinationOut
     date: Optional[dt.date] = None
@@ -41,6 +42,15 @@ class ItineraryOut(BaseModel):
     start_time: Optional[str] = None
     total_duration_minutes: int
     is_saved: bool = False
+    is_public: bool = False
     stops: list[ItineraryStopOut]
     created_at: dt.datetime
     updated_at: dt.datetime
+    # Rating summary — populated for public trips (explore feed, trip detail)
+    avg_rating: Optional[float] = None
+    ratings_count: int = 0
+    my_rating: Optional[int] = None
+
+
+class RateItineraryRequest(BaseModel):
+    stars: int = Field(ge=1, le=5)

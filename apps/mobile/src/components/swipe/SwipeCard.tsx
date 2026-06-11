@@ -20,8 +20,9 @@ import {
 } from 'react-native-gesture-handler';
 import type { PlaceCard } from '@gowander/shared-types';
 import type { SwipeDecision } from '@gowander/shared-types';
-import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, CATEGORY_COLORS, CATEGORY_ICONS } from '../../constants';
+import { FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, CATEGORY_COLORS, CATEGORY_ICONS, type ThemeColors } from '../../constants';
 import { SWIPE } from '@gowander/shared-constants';
+import { useThemeColors } from '../../hooks/useTheme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_WIDTH = SCREEN_WIDTH - SPACING.xl * 2;
@@ -45,6 +46,9 @@ export function SwipeCard({
   gestureDisabled = false,
   unavailable = false,
 }: SwipeCardProps) {
+    const COLORS = useThemeColors();
+    const styles = React.useMemo(() => makeStyles(COLORS), [COLORS]);
+
   const translateX = useSharedValue(0);
   const translateY = useSharedValue(0);
   const [imageFailed, setImageFailed] = useState(false);
@@ -191,7 +195,7 @@ export function SwipeCard({
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (COLORS: ThemeColors) => StyleSheet.create({
   card: {
     position: 'absolute',
     width: CARD_WIDTH,

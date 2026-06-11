@@ -3,6 +3,7 @@ import {
   View,
   Text,
   FlatList,
+  ScrollView,
   TouchableOpacity,
   TextInput,
   StyleSheet,
@@ -14,29 +15,29 @@ import { useNavigation } from '@react-navigation/native';
 import type { Destination } from '@gowander/shared-types';
 import type { AppScreenNavigationProp } from '../../types/navigation';
 import { useDestinations } from '../../hooks/usePlaces';
-import {
-  COLORS,
-  FONTS,
-  SPACING,
-  FONT_SIZE,
-  BORDER_RADIUS,
-  CARD,
-  INTEREST_COLORS,
-} from '../../constants';
+import { useAuthStore } from '../../store/slices/auth.slice';
+import { FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, cardStyle, type ThemeColors } from '../../constants';
+import { useThemeColors } from '../../hooks/useTheme';
+import { useT } from '../../i18n';
 
-// Rotate destination icon circles through the pastel tint pairs
-const TINTS = Object.values(INTEREST_COLORS);
-const CITY_ICONS = ['earth-outline', 'map-outline', 'compass-outline', 'trail-sign-outline'] as const;
+// Curated "popular" set shown as big photo cards; the rest live in the list
+const POPULAR_CITIES = ['Paris', 'Tokyo', 'Athens', 'Bali', 'Rome', 'New York', 'Cancún', 'Barcelona'];
 
-function tintFor(name: string) {
-  let hash = 0;
-  for (const ch of name) hash = (hash * 31 + ch.charCodeAt(0)) % 997;
-  return { tint: TINTS[hash % TINTS.length], icon: CITY_ICONS[hash % CITY_ICONS.length] };
+function greetingKey(): 'goodMorning' | 'goodAfternoon' | 'goodEvening' {
+  const h = new Date().getHours();
+  if (h < 12) return 'goodMorning';
+  if (h < 19) return 'goodAfternoon';
+  return 'goodEvening';
 }
 
 export function DestinationPickerScreen() {
+    const COLORS = useThemeColors();
+    const styles = React.useMemo(() => makeStyles(COLORS), [COLORS]);
+    const t = useT();
+
   const navigation = useNavigation<AppScreenNavigationProp>();
   const [search, setSearch] = useState('');
+  const user = useAuthStore((s) => s.user);
 
   const { data: destinations = [], isLoading, error } = useDestinations();
 
@@ -45,6 +46,10 @@ export function DestinationPickerScreen() {
       .toLowerCase()
       .includes(search.toLowerCase()),
   );
+
+  const popular = POPULAR_CITIES
+    .map((city) => destinations.find((d) => d.city === city))
+    .filter(Boolean) as Destination[];
 
   function handleSelect(destination: Destination) {
     navigation.navigate('TripDate', { destination });
@@ -58,18 +63,29 @@ export function DestinationPickerScreen() {
     );
   }
 
+  const firstName = user?.full_name?.split(' ')[0] ?? 'traveler';
+  const isSearching = search.trim().length > 0;
+
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Where to?</Text>
-        <Text style={styles.subtitle}>Pick a destination, start an adventure</Text>
+    <ScrollView
+      style={styles.container}
+      contentContainerStyle={styles.content}
+      keyboardShouldPersistTaps="handled"
+    >
+      {/* Greeting + hero */}
+      <View style={styles.hero}>
+        <Text style={styles.greeting}>{t(greetingKey())}, {firstName} 👋</Text>
+        <Text style={styles.heroTitle}>
+          {t('heroLine1')}{'\n'}{t('heroLine2')} <Text style={styles.heroAccent}>{t('heroAccent')}</Text>
+        </Text>
       </View>
 
+      {/* Search */}
       <View style={styles.searchWrap}>
-        <Ionicons name="search" size={18} color={COLORS.textMuted} style={styles.searchIcon} />
+        <Ionicons name="search" size={18} color={COLORS.textMuted} />
         <TextInput
           style={styles.search}
-          placeholder="Search destinations..."
+          placeholder={t('searchDestinations')}
           placeholderTextColor={COLORS.textMuted}
           value={search}
           onChangeText={setSearch}
@@ -78,67 +94,112 @@ export function DestinationPickerScreen() {
       </View>
 
       {isLoading ? (
-        <ActivityIndicator style={styles.centered} color={COLORS.primary} />
+        <ActivityIndicator style={{ marginTop: SPACING.xl }} color={COLORS.primary} />
+      ) : isSearching ? (
+        /* ── Search results ── */
+        <View style={styles.listSection}>
+          <Text style={styles.sectionLabel}>{t('results')}</Text>
+          {filtered.length === 0 && (
+            <Text style={styles.emptyText}>{t('noDestinations')}</Text>
+          )}
+          {filtered.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={styles.rowCard}
+              onPress={() => handleSelect(item)}
+              activeOpacity={0.7}
+            >
+              <Image source={{ uri: item.image_url }} style={styles.rowImage} />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.rowCity}>{item.city}</Text>
+                <Text style={styles.rowCountry}>{item.country}</Text>
+              </View>
+              <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
+            </TouchableOpacity>
+          ))}
+        </View>
       ) : (
-        <FlatList
-          data={filtered}
-          keyExtractor={(item) => item.id}
-          contentContainerStyle={styles.list}
-          renderItem={({ item }) => {
-            const { tint, icon } = tintFor(item.city);
-            return (
+        <>
+          {/* ── Popular destinations: big photo cards ── */}
+          <Text style={styles.sectionLabel}>{t('popularDestinations')}</Text>
+          <FlatList
+            horizontal
+            data={popular}
+            keyExtractor={(item) => item.id}
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.popularScroll}
+            renderItem={({ item, index }) => (
               <TouchableOpacity
-                style={styles.card}
+                style={styles.popularCard}
+                onPress={() => handleSelect(item)}
+                activeOpacity={0.85}
+              >
+                <Image source={{ uri: item.image_url }} style={styles.popularImage} />
+                <View style={styles.popularGradient} />
+                {index === 0 && (
+                  <View style={styles.hotBadge}>
+                    <Text style={styles.hotBadgeText}>HOT</Text>
+                  </View>
+                )}
+                <View style={styles.popularBody}>
+                  <Text style={styles.popularCity}>{item.city}</Text>
+                  <Text style={styles.popularCountry}>{item.country}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
+
+          {/* ── All destinations ── */}
+          <View style={styles.listSection}>
+            <Text style={styles.sectionLabel}>{t('allDestinations')}</Text>
+            {destinations.map((item) => (
+              <TouchableOpacity
+                key={item.id}
+                style={styles.rowCard}
                 onPress={() => handleSelect(item)}
                 activeOpacity={0.7}
               >
-                {item.image_url ? (
-                  <Image
-                    source={{ uri: item.image_url }}
-                    style={styles.cityImage}
-                    resizeMode="cover"
-                  />
-                ) : (
-                  <View style={[styles.iconCircle, { backgroundColor: tint.bg }]}>
-                    <Ionicons name={icon as any} size={22} color={tint.fg} />
-                  </View>
-                )}
-                <View style={styles.cardText}>
-                  <Text style={styles.cityName}>{item.city}</Text>
-                  <Text style={styles.country}>{item.country}</Text>
+                <Image source={{ uri: item.image_url }} style={styles.rowImage} />
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.rowCity}>{item.city}</Text>
+                  <Text style={styles.rowCountry}>{item.country}</Text>
                 </View>
                 <Ionicons name="chevron-forward" size={20} color={COLORS.primary} />
               </TouchableOpacity>
-            );
-          }}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>No destinations found</Text>
-          }
-        />
+            ))}
+          </View>
+        </>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (COLORS: ThemeColors) => StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.background },
+  content: { paddingBottom: SPACING.xxl },
   centered: { flex: 1, justifyContent: 'center', alignItems: 'center' },
-  header: {
+  hero: {
     paddingHorizontal: SPACING.md,
     paddingTop: SPACING.sm,
   },
-  title: {
+  greeting: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.textMuted,
+  },
+  heroTitle: {
     fontFamily: FONTS.heavy,
     fontSize: FONT_SIZE.xxl,
     color: COLORS.text,
-  },
-  subtitle: {
-    fontSize: FONT_SIZE.md,
-    color: COLORS.textMuted,
+    lineHeight: 34,
     marginTop: 2,
   },
+  heroAccent: {
+    fontFamily: FONTS.heavy,
+    color: COLORS.primary,
+  },
   searchWrap: {
-    margin: SPACING.md,
+    marginHorizontal: SPACING.md,
+    marginTop: SPACING.md,
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: COLORS.surface,
@@ -146,45 +207,102 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: COLORS.border,
     paddingHorizontal: SPACING.sm,
-  },
-  searchIcon: {
-    marginLeft: SPACING.xs,
+    gap: SPACING.xs,
   },
   search: {
     flex: 1,
-    height: 48,
-    paddingHorizontal: SPACING.sm,
+    height: 46,
     fontSize: FONT_SIZE.md,
     color: COLORS.text,
   },
-  list: { paddingHorizontal: SPACING.md, gap: SPACING.sm, paddingBottom: SPACING.xl },
-  card: {
-    ...CARD,
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: SPACING.md,
+  sectionLabel: {
+    fontFamily: FONTS.heavy,
+    fontSize: FONT_SIZE.xs,
+    color: COLORS.textMuted,
+    letterSpacing: 1.2,
+    paddingHorizontal: SPACING.md,
+    marginTop: SPACING.lg,
+    marginBottom: SPACING.sm,
+  },
+  popularScroll: {
+    paddingHorizontal: SPACING.md,
     gap: SPACING.sm,
   },
-  iconCircle: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    alignItems: 'center',
-    justifyContent: 'center',
+  popularCard: {
+    width: 140,
+    height: 160,
+    borderRadius: BORDER_RADIUS.xl,
+    overflow: 'hidden',
+    backgroundColor: COLORS.borderDark,
   },
-  cityImage: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+  popularImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: undefined,
+    height: undefined,
+  },
+  popularGradient: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    height: '45%',
+    backgroundColor: 'rgba(0,0,0,0.45)',
+  },
+  hotBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    backgroundColor: COLORS.primary,
+    borderRadius: 8,
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+  },
+  hotBadgeText: {
+    fontFamily: FONTS.heavy,
+    fontSize: 9,
+    color: '#FFFFFF',
+  },
+  popularBody: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    bottom: 10,
+  },
+  popularCity: {
+    fontFamily: FONTS.heavy,
+    fontSize: FONT_SIZE.md,
+    color: '#FFFFFF',
+  },
+  popularCountry: {
+    fontSize: FONT_SIZE.xs,
+    color: 'rgba(255,255,255,0.8)',
+  },
+  listSection: {
+    paddingHorizontal: SPACING.md,
+    gap: SPACING.sm,
+  },
+  rowCard: {
+    ...cardStyle(COLORS),
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: SPACING.sm,
+    gap: SPACING.sm,
+  },
+  rowImage: {
+    width: 48,
+    height: 48,
+    borderRadius: BORDER_RADIUS.md,
     backgroundColor: COLORS.border,
   },
-  cardText: { flex: 1 },
-  cityName: {
+  rowCity: {
     fontFamily: FONTS.heavy,
-    fontSize: FONT_SIZE.lg,
+    fontSize: FONT_SIZE.md,
     color: COLORS.text,
   },
-  country: { fontSize: FONT_SIZE.sm, color: COLORS.textMuted, marginTop: 1 },
+  rowCountry: {
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.textMuted,
+  },
   errorText: { color: COLORS.error, fontSize: FONT_SIZE.md },
-  emptyText: { textAlign: 'center', color: COLORS.textMuted, marginTop: SPACING.xl },
+  emptyText: { textAlign: 'center', color: COLORS.textMuted, marginTop: SPACING.md },
 });

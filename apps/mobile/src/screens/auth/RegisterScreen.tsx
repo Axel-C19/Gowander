@@ -14,10 +14,14 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useRegister } from '../../hooks/useAuth';
 import type { AuthScreenNavigationProp } from '../../types/navigation';
-import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, type ThemeColors } from '../../constants';
 import { Button } from '../../components/ui/Button';
+import { useThemeColors } from '../../hooks/useTheme';
 
 export function RegisterScreen() {
+    const COLORS = useThemeColors();
+    const styles = React.useMemo(() => makeStyles(COLORS), [COLORS]);
+
     const navigation = useNavigation<AuthScreenNavigationProp>();
     const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
@@ -133,7 +137,7 @@ export function RegisterScreen() {
     );
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (COLORS: ThemeColors) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: COLORS.background,

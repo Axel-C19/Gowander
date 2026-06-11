@@ -28,8 +28,14 @@ def seed():
         ))
         conn.execute(text("ALTER TABLE itineraries ADD COLUMN IF NOT EXISTS end_date DATE"))
         conn.execute(text(
+            "ALTER TABLE itineraries ADD COLUMN IF NOT EXISTS is_public BOOLEAN NOT NULL DEFAULT FALSE"
+        ))
+        conn.execute(text(
             "ALTER TABLE itinerary_stops ADD COLUMN IF NOT EXISTS day INTEGER NOT NULL DEFAULT 1"
         ))
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS avatar_url VARCHAR(500)"))
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS bio VARCHAR(500)"))
+        conn.execute(text("ALTER TABLE users ADD COLUMN IF NOT EXISTS google_id VARCHAR(255) UNIQUE"))
         conn.commit()
 
     db = SessionLocal()
