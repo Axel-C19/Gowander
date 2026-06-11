@@ -1,0 +1,116 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  # ─── Backend ─────────────────────────────────────────────────────────────
+  backend:
+    name: Backend — lint + test
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: gowander_test
+          POSTGRES_USER: gowander
+          POSTGRES_PASSWORD: gowander
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://gowander:gowander@localhost:5432/gowander_test
+      SECRET_KEY: ci-test-secret-key-not-for-prod
+      ENVIRONMENT: test
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: apps/backend/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r apps/backend/requirements.txt
+
+      - name: Lint (ruff)
+        run: ruff check apps/backend/
+
+      - name: Run migrations
+        working-directory: apps/backend
+        run: alembic upgrade head
+
+      - name: Run tests
+        working-directory: apps/backend
+        run: pytest tests/ -v --tb=short --cov=app --cov-report=xml
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v4
+        if: github.event_name == 'push'
+        with:
+          files: apps/backend/coverage.xml
+          flags: backend
+
+  # ─── Mobile ──────────────────────────────────────────────────────────────
+  mobile:
+    name: Mobile — lint + type-check + test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npm run type-check --workspace=apps/mobile
+
+      - name: Lint
+        run: npm run lint --workspace=apps/mobile
+
+      - name: Test
+        run: npm run test --workspace=apps/mobile -- --coverage
+
+  # ─── Deploy preview (on PR) ───────────────────────────────────────────────
+  eas-preview:
+    name: EAS preview build
+    runs-on: ubuntu-latest
+    needs: [mobile]
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Setup EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build preview
+        working-directory: apps/mobile
+        run: eas build --profile preview --platform all --non-interactive

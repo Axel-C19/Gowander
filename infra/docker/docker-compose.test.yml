@@ -1,0 +1,30 @@
+services:
+  db_test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: gowander_test
+      POSTGRES_USER: gowander
+      POSTGRES_PASSWORD: gowander
+    ports:
+      - "5433:5432"     # Different port — won't conflict with dev DB
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gowander -d gowander_test"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  backend_test:
+    build:
+      context: ../../apps/backend
+      dockerfile: ../../infra/docker/Dockerfile.backend
+      target: dev
+    command: >
+      sh -c "alembic upgrade head &&
+             pytest tests/ -v --tb=short"
+    environment:
+      DATABASE_URL: postgresql://gowander:gowander@db_test:5432/gowander_test
+      SECRET_KEY: test-secret-key-not-for-prod
+      ENVIRONMENT: test
+    depends_on:
+      db_test:
+        condition: service_healthy

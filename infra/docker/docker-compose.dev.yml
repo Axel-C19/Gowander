@@ -1,0 +1,44 @@
+services:
+  db:
+    image: postgres:16-alpine
+    platform: linux/arm64
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: gowander_dev
+      POSTGRES_USER: gowander
+      POSTGRES_PASSWORD: gowander
+    ports:
+      - "0.0.0.0:5432:5432"
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gowander -d gowander_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ../../apps/backend
+      dockerfile: ../../infra/docker/Dockerfile.backend
+      target: dev
+      platforms:
+        - linux/arm64
+    platform: linux/arm64
+    restart: unless-stopped
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload --loop asyncio
+    ports:
+      - "0.0.0.0:8000:8000"
+    environment:
+      DATABASE_URL: postgresql://gowander:gowander@db:5432/gowander_dev
+      SECRET_KEY: dev-secret-key-change-in-prod
+      ENVIRONMENT: development
+      DEBUG: "true"
+    volumes:
+      - ../../apps/backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  postgres_dev_data:

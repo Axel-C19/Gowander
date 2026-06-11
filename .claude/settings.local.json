@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(.venv/bin/pytest tests/ -q)",
+      "Bash(PYTHONPATH=. .venv/bin/python /tmp/repro.py)",
+      "Bash(sed -i '' 's/country=\"France\",/country=\"France\", country_code=\"FR\",/' /tmp/repro.py && PYTHONPATH=. .venv/bin/python /tmp/repro.py 2>&1 | tail -4)",
+      "Bash(npx tsc *)",
+      "Bash(python3 -)",
+      "Bash(make db-seed *)",
+      "Bash(make -C ../.. db-seed)",
+      "Bash(npm install *)"
+    ]
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "name": "gowander",
+  "private": true,
+  "workspaces": [
+    "apps/mobile",
+    "packages/*"
+  ],
+  "scripts": {
+    "mobile": "npm run start --workspace=apps/mobile",
+    "mobile:ios": "npm run ios --workspace=apps/mobile",
+    "mobile:android": "npm run android --workspace=apps/mobile",
+    "backend": "cd apps/backend && uvicorn app.main:app --reload",
+    "backend:docker": "docker compose -f infra/docker/docker-compose.dev.yml up",
+    "db:migrate": "cd apps/backend && alembic upgrade head",
+    "db:seed": "cd apps/backend && python -m app.db.seed",
+    "lint": "npm run lint --workspaces --if-present",
+    "type-check": "npm run type-check --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "@expo/metro-runtime": "~6.1.2",
+    "react-dom": "19.1.0",
+    "react-native-web": "^0.21.0"
+  }
+}
