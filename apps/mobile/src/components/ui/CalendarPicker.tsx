@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, CARD } from '../../constants';
 
 interface CalendarPickerProps {
   /** Called with ISO date string "YYYY-MM-DD" when a day is selected. */
@@ -148,10 +148,7 @@ export function CalendarPicker({
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: COLORS.surface,
-    borderRadius: BORDER_RADIUS.lg,
-    borderWidth: 1,
-    borderColor: COLORS.border,
+    ...CARD,
     padding: SPACING.md,
   },
   header: {
@@ -175,8 +172,8 @@ const styles = StyleSheet.create({
     color: COLORS.border,
   },
   monthLabel: {
+    fontFamily: FONTS.heavy,
     fontSize: FONT_SIZE.md,
-    fontWeight: '700',
     color: COLORS.text,
     textTransform: 'capitalize',
   },

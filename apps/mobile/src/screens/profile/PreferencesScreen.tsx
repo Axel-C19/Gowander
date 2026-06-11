@@ -12,7 +12,9 @@ import type { AppScreenNavigationProp } from '../../types/navigation';
 import { useAuthStore } from '../../store/slices/auth.slice';
 import { useUpdatePreferences } from '../../hooks/useAuth';
 import { INTERESTS } from '@gowander/shared-constants';
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { Ionicons } from '@expo/vector-icons';
+import { Button } from '../../components/ui/Button';
+import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, INTEREST_COLORS, INTEREST_ICONS } from '../../constants';
 
 export function PreferencesScreen() {
     const navigation = useNavigation<AppScreenNavigationProp>();
@@ -68,15 +70,24 @@ export function PreferencesScreen() {
             <View style={styles.grid}>
                 {INTERESTS.map((interest) => {
                     const isActive = selected.has(interest.id);
+                    const tint = INTEREST_COLORS[interest.id] ?? { bg: COLORS.primaryTint, fg: COLORS.primaryDark };
                     return (
                         <TouchableOpacity
                             key={interest.id}
-                            style={[styles.chip, isActive && styles.chipActive]}
+                            style={[
+                                styles.chip,
+                                { backgroundColor: isActive ? tint.bg : COLORS.surface,
+                                  borderColor: isActive ? tint.fg : COLORS.border },
+                            ]}
                             onPress={() => toggle(interest.id)}
                             activeOpacity={0.7}
                         >
-                            <Text style={styles.chipEmoji}>{interest.emoji}</Text>
-                            <Text style={[styles.chipLabel, isActive && styles.chipLabelActive]}>
+                            <Ionicons
+                                name={(INTEREST_ICONS[interest.id] ?? 'star-outline') as any}
+                                size={16}
+                                color={isActive ? tint.fg : COLORS.textMuted}
+                            />
+                            <Text style={[styles.chipLabel, { color: isActive ? tint.fg : COLORS.text }]}>
                                 {interest.label}
                             </Text>
                         </TouchableOpacity>
@@ -84,25 +95,18 @@ export function PreferencesScreen() {
                 })}
             </View>
 
-            <TouchableOpacity
-                style={[
-                    styles.saveButton,
-                    (selected.size === 0 || updatePreferences.isPending) && styles.saveDisabled,
-                ]}
+            <Button
+                title={updatePreferences.isPending
+                    ? 'Saving...'
+                    : selected.size === 0
+                        ? 'Pick at least one'
+                        : isOnboarding
+                            ? "Let's go!"
+                            : 'Save changes'}
                 onPress={handleSave}
                 disabled={selected.size === 0 || updatePreferences.isPending}
-                activeOpacity={0.8}
-            >
-                <Text style={styles.saveText}>
-                    {updatePreferences.isPending
-                        ? 'Saving...'
-                        : selected.size === 0
-                            ? 'Pick at least one'
-                            : isOnboarding
-                                ? "Let's go"
-                                : 'Save changes'}
-                </Text>
-            </TouchableOpacity>
+                style={{ marginTop: SPACING.xl }}
+            />
         </ScrollView>
     );
 }
@@ -120,8 +124,8 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.lg,
     },
     title: {
+        fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.xxl,
-        fontWeight: '700',
         color: COLORS.text,
     },
     subtitle: {
@@ -138,27 +142,14 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
         gap: SPACING.xs,
-        backgroundColor: COLORS.surface,
         borderRadius: BORDER_RADIUS.full,
-        borderWidth: 1.5,
-        borderColor: COLORS.border,
+        borderWidth: 2,
         paddingVertical: SPACING.sm,
         paddingHorizontal: SPACING.md,
     },
-    chipActive: {
-        borderColor: COLORS.primary,
-        backgroundColor: COLORS.primary,
-    },
-    chipEmoji: {
-        fontSize: FONT_SIZE.md,
-    },
     chipLabel: {
+        fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.md,
-        fontWeight: '600',
-        color: COLORS.text,
-    },
-    chipLabelActive: {
-        color: COLORS.surface,
     },
     saveButton: {
         height: 52,

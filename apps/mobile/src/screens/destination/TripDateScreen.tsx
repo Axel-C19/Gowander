@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { TripDateRouteProp, AppScreenNavigationProp } from '../../types/navigation';
 import { CalendarPicker } from '../../components/ui/CalendarPicker';
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { Button } from '../../components/ui/Button';
+import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
 
 function formatShort(iso: string): string {
     const [y, m, d] = iso.split('-').map(Number);
@@ -69,20 +70,25 @@ export function TripDateScreen() {
                 onSelectDate={handleSelectDate}
             />
 
-            <TouchableOpacity
-                style={[styles.continueButton, (!startDate || !endDate) && styles.continueDisabled]}
+            {startDate && endDate && (
+                <View style={styles.rangePill}>
+                    <Text style={styles.rangePillText}>
+                        📅 {formatShort(startDate)} – {formatShort(endDate)} · {tripDays} day{tripDays > 1 ? 's' : ''}
+                    </Text>
+                </View>
+            )}
+
+            <View style={styles.spacer} />
+
+            <Button
+                title={!startDate
+                    ? 'Pick your arrival day'
+                    : !endDate
+                        ? 'Pick your departure day'
+                        : 'Lock in my dates'}
                 onPress={handleContinue}
                 disabled={!startDate || !endDate}
-                activeOpacity={0.8}
-            >
-                <Text style={styles.continueText}>
-                    {!startDate
-                        ? 'Pick your arrival day'
-                        : !endDate
-                            ? 'Pick your departure day'
-                            : 'Continue'}
-                </Text>
-            </TouchableOpacity>
+            />
         </View>
     );
 }
@@ -97,8 +103,8 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.lg,
     },
     title: {
+        fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.xxl,
-        fontWeight: '700',
         color: COLORS.text,
     },
     subtitle: {
@@ -106,20 +112,20 @@ const styles = StyleSheet.create({
         color: COLORS.textMuted,
         marginTop: SPACING.xs,
     },
-    continueButton: {
-        height: 52,
-        backgroundColor: COLORS.primary,
-        borderRadius: BORDER_RADIUS.md,
-        alignItems: 'center',
-        justifyContent: 'center',
-        marginTop: SPACING.lg,
+    rangePill: {
+        alignSelf: 'flex-start',
+        backgroundColor: COLORS.primaryTint,
+        borderRadius: BORDER_RADIUS.full,
+        paddingHorizontal: SPACING.md,
+        paddingVertical: SPACING.xs,
+        marginTop: SPACING.md,
     },
-    continueDisabled: {
-        opacity: 0.4,
+    rangePillText: {
+        fontFamily: FONTS.heavy,
+        fontSize: FONT_SIZE.sm,
+        color: COLORS.primaryDark,
     },
-    continueText: {
-        color: COLORS.surface,
-        fontSize: FONT_SIZE.md,
-        fontWeight: '600',
+    spacer: {
+        flex: 1,
     },
 });

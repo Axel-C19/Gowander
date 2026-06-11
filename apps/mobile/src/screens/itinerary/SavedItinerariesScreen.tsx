@@ -10,7 +10,7 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import type { AppScreenNavigationProp } from '../../types/navigation';
 import { useItineraries } from '../../hooks/useItinerary';
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, CARD } from '../../constants';
 import { formatDuration } from '@gowander/shared-utils';
 
 export function SavedItinerariesScreen() {
@@ -82,15 +82,12 @@ const styles = StyleSheet.create({
         gap: SPACING.xs,
     },
     card: {
-        backgroundColor: COLORS.surface,
-        borderRadius: BORDER_RADIUS.lg,
+        ...CARD,
         padding: SPACING.md,
-        borderWidth: 1,
-        borderColor: COLORS.border,
     },
     title: {
+        fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.lg,
-        fontWeight: '600',
         color: COLORS.text,
     },
     subtitle: {
@@ -103,8 +100,8 @@ const styles = StyleSheet.create({
         fontSize: FONT_SIZE.md,
     },
     emptyTitle: {
+        fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.lg,
-        fontWeight: '600',
         color: COLORS.text,
     },
     emptySubtitle: {

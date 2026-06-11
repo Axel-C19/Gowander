@@ -14,7 +14,8 @@ import { useAuthStore } from '../../store/slices/auth.slice';
 import { useLogout } from '../../hooks/useAuth';
 import { useItineraries } from '../../hooks/useItinerary';
 import { INTERESTS } from '@gowander/shared-constants';
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, CARD, INTEREST_COLORS, INTEREST_ICONS } from '../../constants';
+import { Button } from '../../components/ui/Button';
 
 export function ProfileScreen() {
     const navigation = useNavigation<AppScreenNavigationProp>();
@@ -79,13 +80,21 @@ export function ProfileScreen() {
                 </View>
                 <View style={styles.chipRow}>
                     {userInterests.length > 0 ? (
-                        userInterests.map((interest) => (
-                            <View key={interest.id} style={styles.chip}>
-                                <Text style={styles.chipText}>
-                                    {interest.emoji} {interest.label}
-                                </Text>
-                            </View>
-                        ))
+                        userInterests.map((interest) => {
+                            const tint = INTEREST_COLORS[interest.id] ?? { bg: COLORS.primaryTint, fg: COLORS.primaryDark };
+                            return (
+                                <View key={interest.id} style={[styles.chip, { backgroundColor: tint.bg }]}>
+                                    <Ionicons
+                                        name={(INTEREST_ICONS[interest.id] ?? 'star-outline') as any}
+                                        size={14}
+                                        color={tint.fg}
+                                    />
+                                    <Text style={[styles.chipText, { color: tint.fg }]}>
+                                        {interest.label}
+                                    </Text>
+                                </View>
+                            );
+                        })
                     ) : (
                         <Text style={styles.emptyText}>No interests selected yet.</Text>
                     )}
@@ -93,14 +102,7 @@ export function ProfileScreen() {
             </View>
 
             {/* Log out */}
-            <TouchableOpacity
-                style={styles.logoutButton}
-                onPress={handleLogout}
-                activeOpacity={0.8}
-            >
-                <Ionicons name="log-out-outline" size={20} color={COLORS.error} />
-                <Text style={styles.logoutText}>Log out</Text>
-            </TouchableOpacity>
+            <Button title="Log out" variant="danger" onPress={handleLogout} />
         </ScrollView>
     );
 }
@@ -122,7 +124,7 @@ const styles = StyleSheet.create({
         width: 88,
         height: 88,
         borderRadius: 44,
-        backgroundColor: COLORS.surface,
+        backgroundColor: COLORS.primaryTint,
         borderWidth: 2,
         borderColor: COLORS.primary,
         alignItems: 'center',
@@ -130,8 +132,8 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.sm,
     },
     name: {
+        fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.xl,
-        fontWeight: '700',
         color: COLORS.text,
     },
     email: {
@@ -151,16 +153,13 @@ const styles = StyleSheet.create({
     },
     statBox: {
         flex: 1,
-        backgroundColor: COLORS.surface,
-        borderRadius: BORDER_RADIUS.lg,
-        borderWidth: 1,
-        borderColor: COLORS.border,
+        ...CARD,
         alignItems: 'center',
         paddingVertical: SPACING.md,
     },
     statNumber: {
+        fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.xxl,
-        fontWeight: '700',
         color: COLORS.primary,
     },
     statLabel: {
@@ -169,10 +168,7 @@ const styles = StyleSheet.create({
         marginTop: 2,
     },
     section: {
-        backgroundColor: COLORS.surface,
-        borderRadius: BORDER_RADIUS.lg,
-        borderWidth: 1,
-        borderColor: COLORS.border,
+        ...CARD,
         padding: SPACING.md,
         marginBottom: SPACING.lg,
     },
@@ -183,14 +179,14 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.sm,
     },
     sectionTitle: {
+        fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.md,
-        fontWeight: '700',
         color: COLORS.text,
     },
     editLink: {
-        color: COLORS.primary,
+        fontFamily: FONTS.heavy,
+        color: COLORS.secondary,
         fontSize: FONT_SIZE.md,
-        fontWeight: '600',
     },
     chipRow: {
         flexDirection: 'row',
@@ -198,15 +194,16 @@ const styles = StyleSheet.create({
         gap: SPACING.xs,
     },
     chip: {
-        backgroundColor: COLORS.background,
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: 5,
         borderRadius: BORDER_RADIUS.full,
         paddingHorizontal: SPACING.sm,
-        paddingVertical: 4,
+        paddingVertical: 5,
     },
     chipText: {
+        fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.sm,
-        color: COLORS.text,
-        fontWeight: '500',
     },
     emptyText: {
         fontSize: FONT_SIZE.sm,

@@ -13,7 +13,7 @@ import { useSwipeSession } from '../../hooks/useSwipe';
 import { useSwipeStore } from '../../store/slices/swipe.slice';
 import { SwipeCard } from '../../components/swipe/SwipeCard';
 import { SwipeButtons } from '../../components/swipe/SwipeButtons';
-import { COLORS, SPACING, FONT_SIZE } from '../../constants';
+import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
 import type { SwipeDecision } from '@gowander/shared-types';
 import { isPlaceOpenInRange } from '@gowander/shared-utils';
 import { INTERESTS } from '@gowander/shared-constants';
@@ -166,9 +166,19 @@ export function SwipeDeckScreen() {
 
     return (
         <View style={styles.container}>
-            <Text style={styles.progress}>
-                {currentIndex + 1} / {cards.length}
-            </Text>
+            <View style={styles.progressRow}>
+                <View style={styles.progressTrack}>
+                    <View
+                        style={[
+                            styles.progressFill,
+                            { width: `${((currentIndex + 1) / cards.length) * 100}%` },
+                        ]}
+                    />
+                </View>
+                <Text style={styles.progress}>
+                    {currentIndex + 1} / {cards.length}
+                </Text>
+            </View>
 
             <View style={styles.deckArea}>
                 {cards.slice(currentIndex, currentIndex + 3).map((card, i) => (
@@ -205,11 +215,29 @@ const styles = StyleSheet.create({
         gap: SPACING.sm,
         padding: SPACING.xl,
     },
+    progressRow: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: SPACING.sm,
+        paddingHorizontal: SPACING.md,
+        marginTop: SPACING.sm,
+    },
+    progressTrack: {
+        flex: 1,
+        height: 12,
+        borderRadius: BORDER_RADIUS.full,
+        backgroundColor: COLORS.border,
+        overflow: 'hidden',
+    },
+    progressFill: {
+        height: '100%',
+        borderRadius: BORDER_RADIUS.full,
+        backgroundColor: COLORS.primary,
+    },
     progress: {
-        textAlign: 'center',
+        fontFamily: FONTS.heavy,
         color: COLORS.textMuted,
         fontSize: FONT_SIZE.sm,
-        marginTop: SPACING.sm,
     },
     deckArea: {
         flex: 1,

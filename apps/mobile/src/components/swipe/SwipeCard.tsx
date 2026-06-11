@@ -19,7 +19,7 @@ import {
 } from 'react-native-gesture-handler';
 import type { PlaceCard } from '@gowander/shared-types';
 import type { SwipeDecision } from '@gowander/shared-types';
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, CATEGORY_COLORS } from '../../constants';
 import { SWIPE } from '@gowander/shared-constants';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -146,8 +146,20 @@ export function SwipeCard({
         </Animated.View>
 
         <View style={styles.info}>
-          <View style={styles.categoryBadge}>
-            <Text style={styles.categoryText}>{place.category}</Text>
+          <View
+            style={[
+              styles.categoryBadge,
+              { backgroundColor: (CATEGORY_COLORS[place.category] ?? CATEGORY_COLORS.other).bg },
+            ]}
+          >
+            <Text
+              style={[
+                styles.categoryText,
+                { color: (CATEGORY_COLORS[place.category] ?? CATEGORY_COLORS.other).fg },
+              ]}
+            >
+              {place.category}
+            </Text>
           </View>
           <Text style={[styles.placeName, unavailable && styles.textGray]} numberOfLines={2}>
             {place.name}
@@ -171,12 +183,11 @@ const styles = StyleSheet.create({
     height: CARD_HEIGHT,
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.xl,
+    borderWidth: 2,
+    borderBottomWidth: 4,
+    borderColor: COLORS.border,
+    borderBottomColor: COLORS.borderDark,
     overflow: 'hidden',
-    shadowColor: COLORS.cardShadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-    elevation: 8,
   },
   image: {
     width: '100%',
@@ -240,20 +251,18 @@ const styles = StyleSheet.create({
   },
   categoryBadge: {
     alignSelf: 'flex-start',
-    backgroundColor: COLORS.background,
     borderRadius: BORDER_RADIUS.full,
     paddingHorizontal: SPACING.sm,
     paddingVertical: 3,
   },
   categoryText: {
+    fontFamily: FONTS.heavy,
     fontSize: FONT_SIZE.xs,
-    color: COLORS.primary,
-    fontWeight: '600',
     textTransform: 'capitalize',
   },
   placeName: {
+    fontFamily: FONTS.heavy,
     fontSize: FONT_SIZE.xl,
-    fontWeight: '700',
     color: COLORS.text,
   },
   placeDescription: {

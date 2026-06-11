@@ -13,7 +13,8 @@ import {
 import { useNavigation } from '@react-navigation/native';
 import { useLogin } from '../../hooks/useAuth';
 import type { AuthScreenNavigationProp } from '../../types/navigation';
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { Button } from '../../components/ui/Button';
 
 export function LoginScreen() {
     const navigation = useNavigation<AuthScreenNavigationProp>();
@@ -67,18 +68,12 @@ export function LoginScreen() {
                         editable={!login.isPending}
                     />
 
-                    <TouchableOpacity
-                        style={[styles.button, login.isPending && styles.buttonDisabled]}
+                    <Button
+                        title={login.isPending ? 'Signing in...' : 'Sign in'}
                         onPress={handleLogin}
                         disabled={login.isPending}
-                        activeOpacity={0.8}
-                    >
-                        {login.isPending ? (
-                            <ActivityIndicator color={COLORS.surface} />
-                        ) : (
-                            <Text style={styles.buttonText}>Sign in</Text>
-                        )}
-                    </TouchableOpacity>
+                        style={{ marginTop: SPACING.sm }}
+                    />
 
                     <TouchableOpacity
                         style={styles.registerLink}
@@ -107,8 +102,8 @@ const styles = StyleSheet.create({
         paddingHorizontal: SPACING.xl,
     },
     logo: {
+        fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.hero,
-        fontWeight: '700',
         color: COLORS.primary,
         textAlign: 'center',
         marginBottom: SPACING.xs,
@@ -125,9 +120,9 @@ const styles = StyleSheet.create({
     input: {
         height: 52,
         backgroundColor: COLORS.surface,
-        borderWidth: 1,
+        borderWidth: 2,
         borderColor: COLORS.border,
-        borderRadius: BORDER_RADIUS.md,
+        borderRadius: BORDER_RADIUS.lg,
         paddingHorizontal: SPACING.md,
         fontSize: FONT_SIZE.md,
         color: COLORS.text,

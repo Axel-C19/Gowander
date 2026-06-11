@@ -12,7 +12,8 @@ import { useRoute, useNavigation } from '@react-navigation/native';
 import type { ItinerarySummaryRouteProp, AppScreenNavigationProp } from '../../types/navigation';
 import { useGenerateItinerary, useSaveItinerary } from '../../hooks/useItinerary';
 import { useSwipeStore } from '../../store/slices/swipe.slice';
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { COLORS, FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, CARD, CATEGORY_COLORS } from '../../constants';
+import { Button } from '../../components/ui/Button';
 import type { Itinerary } from '@gowander/shared-types';
 import { formatTime, formatDuration, categoryLabel } from '@gowander/shared-utils';
 
@@ -118,8 +119,18 @@ export function ItinerarySummaryScreen() {
                             <Text style={styles.stopTime}>
                                 {stop.arrival_time ? formatTime(stop.arrival_time) : '--:--'}
                             </Text>
-                            <View style={styles.categoryBadge}>
-                                <Text style={styles.categoryText}>
+                            <View
+                                style={[
+                                    styles.categoryBadge,
+                                    { backgroundColor: (CATEGORY_COLORS[stop.place.category] ?? CATEGORY_COLORS.other).bg },
+                                ]}
+                            >
+                                <Text
+                                    style={[
+                                        styles.categoryText,
+                                        { color: (CATEGORY_COLORS[stop.place.category] ?? CATEGORY_COLORS.other).fg },
+                                    ]}
+                                >
                                     {categoryLabel(stop.place.category)}
                                 </Text>
                             </View>
@@ -147,38 +158,31 @@ export function ItinerarySummaryScreen() {
             ))}
 
             {/* View on map button */}
-            <TouchableOpacity
-                style={styles.mapButton}
+            <Button
+                title="View on map"
                 onPress={() => navigation.navigate('MapView', { itinerary })}
-                activeOpacity={0.8}
-            >
-                <Text style={styles.mapButtonText}>View on map</Text>
-            </TouchableOpacity>
+                style={{ marginTop: SPACING.lg }}
+            />
 
             {/* Save / plan another trip */}
             <View style={styles.actionsRow}>
-                <TouchableOpacity
-                    style={styles.startOverButton}
+                <Button
+                    title="Plan another"
+                    variant="quiet"
                     onPress={() => navigation.navigate('Main')}
-                    activeOpacity={0.8}
-                >
-                    <Text style={styles.startOverText}>Plan another trip</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                    style={[styles.saveButton, itinerary.is_saved && styles.savedButton]}
+                    style={{ flex: 1 }}
+                />
+                <Button
+                    title={itinerary.is_saved
+                        ? 'Saved ✓'
+                        : saveItinerary.isPending
+                            ? 'Saving...'
+                            : 'Save itinerary'}
+                    variant="success"
                     onPress={handleSave}
                     disabled={itinerary.is_saved || saveItinerary.isPending}
-                    activeOpacity={0.8}
-                >
-                    <Text style={styles.saveButtonText}>
-                        {itinerary.is_saved
-                            ? 'Saved ✓'
-                            : saveItinerary.isPending
-                                ? 'Saving...'
-                                : 'Save itinerary'}
-                    </Text>
-                </TouchableOpacity>
+                    style={{ flex: 1 }}
+                />
             </View>
         </ScrollView>
     );
@@ -216,8 +220,8 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.lg,
     },
     title: {
+        fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.xxl,
-        fontWeight: '700',
         color: COLORS.text,
     },
     subtitle: {
@@ -230,8 +234,8 @@ const styles = StyleSheet.create({
         marginBottom: SPACING.md,
     },
     dayHeader: {
+        fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.md,
-        fontWeight: '700',
         color: COLORS.primary,
         marginBottom: SPACING.sm,
         marginTop: SPACING.xs,
@@ -257,11 +261,8 @@ const styles = StyleSheet.create({
     },
     stopContent: {
         flex: 1,
-        backgroundColor: COLORS.surface,
-        borderRadius: BORDER_RADIUS.lg,
+        ...CARD,
         padding: SPACING.md,
-        borderWidth: 1,
-        borderColor: COLORS.border,
         gap: SPACING.xs,
     },
     stopHeader: {
@@ -275,19 +276,17 @@ const styles = StyleSheet.create({
         color: COLORS.primary,
     },
     categoryBadge: {
-        backgroundColor: COLORS.background,
         borderRadius: BORDER_RADIUS.full,
         paddingHorizontal: SPACING.sm,
         paddingVertical: 2,
     },
     categoryText: {
+        fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.xs,
-        color: COLORS.primary,
-        fontWeight: '600',
     },
     stopName: {
+        fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.lg,
-        fontWeight: '600',
         color: COLORS.text,
     },
     stopDescription: {

@@ -8,7 +8,7 @@ import { useAuthStore } from '../store/slices/auth.slice';
 import { SwipeDeckScreen } from '../screens/swipe/SwipeDeckScreen';
 import { ItinerarySummaryScreen } from '../screens/itinerary/ItinerarySummaryScreen';
 import { MapViewScreen } from '../screens/itinerary/MapViewScreen';
-import { COLORS } from '../constants';
+import { COLORS, FONTS } from '../constants';
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
@@ -22,8 +22,9 @@ export function AppStack() {
     <Stack.Navigator
       initialRouteName={needsOnboarding ? 'Preferences' : 'Main'}
       screenOptions={{
-        headerStyle: { backgroundColor: COLORS.surface },
-        headerTintColor: COLORS.text,
+        headerStyle: { backgroundColor: COLORS.background },
+        headerTintColor: COLORS.primary,
+        headerTitleStyle: { fontFamily: FONTS.heavy, color: COLORS.text },
         headerShadowVisible: false,
       }}
     >

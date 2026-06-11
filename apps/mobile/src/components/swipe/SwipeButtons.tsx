@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, TouchableOpacity, Text, StyleSheet } from 'react-native';
-import { COLORS, SPACING, FONT_SIZE, BORDER_RADIUS } from '../../constants';
+import { View, Pressable, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { COLORS, SPACING, BORDER_RADIUS } from '../../constants';
 
 interface SwipeButtonsProps {
   onAccept: () => void;
@@ -8,26 +9,59 @@ interface SwipeButtonsProps {
   disabled?: boolean;
 }
 
+const EDGE = 4;
+const EDGE_PRESSED = 1;
+
+function VerdictButton({
+  onPress,
+  disabled,
+  color,
+  edgeColor,
+  icon,
+}: {
+  onPress: () => void;
+  disabled?: boolean;
+  color: string;
+  edgeColor: string;
+  icon: 'close' | 'checkmark';
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      style={({ pressed }) => [
+        styles.button,
+        {
+          borderColor: color,
+          borderBottomColor: edgeColor,
+          borderBottomWidth: pressed && !disabled ? EDGE_PRESSED : EDGE,
+          marginTop: pressed && !disabled ? EDGE - EDGE_PRESSED : 0,
+          opacity: disabled ? 0.4 : 1,
+        },
+      ]}
+    >
+      <Ionicons name={icon} size={32} color={color} />
+    </Pressable>
+  );
+}
+
 export function SwipeButtons({ onAccept, onReject, disabled }: SwipeButtonsProps) {
   return (
     <View style={styles.container}>
-      <TouchableOpacity
-        style={[styles.button, styles.rejectButton, disabled && styles.disabled]}
+      <VerdictButton
         onPress={onReject}
         disabled={disabled}
-        activeOpacity={0.7}
-      >
-        <Text style={[styles.icon, { color: COLORS.swipeReject }]}>✕</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={[styles.button, styles.acceptButton, disabled && styles.disabled]}
+        color={COLORS.swipeReject}
+        edgeColor={COLORS.errorDark}
+        icon="close"
+      />
+      <VerdictButton
         onPress={onAccept}
         disabled={disabled}
-        activeOpacity={0.7}
-      >
-        <Text style={[styles.icon, { color: COLORS.swipeAccept }]}>✓</Text>
-      </TouchableOpacity>
+        color={COLORS.swipeAccept}
+        edgeColor={COLORS.successDark}
+        icon="checkmark"
+      />
     </View>
   );
 }
@@ -41,21 +75,12 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING.xxl,
   },
   button: {
-    width: 64,
-    height: 64,
+    width: 68,
+    height: 68,
     borderRadius: BORDER_RADIUS.full,
     backgroundColor: COLORS.surface,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: COLORS.cardShadow,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 4,
-    borderWidth: 1.5,
+    borderWidth: 2.5,
   },
-  rejectButton: { borderColor: COLORS.swipeReject },
-  acceptButton: { borderColor: COLORS.swipeAccept },
-  disabled: { opacity: 0.4 },
-  icon: { fontSize: FONT_SIZE.xl, fontWeight: '700' },
 });
