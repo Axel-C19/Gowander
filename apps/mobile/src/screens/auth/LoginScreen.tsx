@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+    Image,
     View,
     Text,
     TextInput,
@@ -84,7 +85,14 @@ export function LoginScreen() {
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
             <View style={styles.inner}>
-                <Text style={styles.logo}>GoWander</Text>
+                <Image
+                    source={require('../../../assets/logo-mark.png')}
+                    style={styles.logoMark}
+                    resizeMode="contain"
+                />
+                <Text style={styles.logo}>
+                    <Text style={styles.logoAccent}>go</Text>wander
+                </Text>
                 <Text style={styles.tagline}>Your intelligent travel companion</Text>
 
                 <View style={styles.form}>
@@ -167,12 +175,22 @@ const makeStyles = (COLORS: ThemeColors) => StyleSheet.create({
         justifyContent: 'center',
         paddingHorizontal: SPACING.xl,
     },
+    logoMark: {
+        width: 88,
+        height: 88,
+        alignSelf: 'center',
+        marginBottom: SPACING.sm,
+    },
     logo: {
         fontFamily: FONTS.heavy,
         fontSize: FONT_SIZE.hero,
-        color: COLORS.primary,
+        color: COLORS.text,
         textAlign: 'center',
         marginBottom: SPACING.xs,
+    },
+    logoAccent: {
+        fontFamily: FONTS.heavy,
+        color: COLORS.primary,
     },
     tagline: {
         fontSize: FONT_SIZE.md,

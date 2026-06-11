@@ -38,7 +38,13 @@
       "Bash(brew --version)",
       "Bash(brew install *)",
       "Bash(cloudflared --version)",
-      "Bash(grep -rn \"import.*[{,] *COLORS[,}]\" apps/mobile/src --include=\"*.tsx\" --include=\"*.ts\")"
+      "Bash(grep -rn \"import.*[{,] *COLORS[,}]\" apps/mobile/src --include=\"*.tsx\" --include=\"*.ts\")",
+      "mcp__visualize__read_me",
+      "Bash(python3 -c \"import PIL; print\\(PIL.__version__\\)\")",
+      "Bash(.venv/bin/pip install *)",
+      "Bash(curl -sL -o /tmp/nunito.ttf \"https://github.com/google/fonts/raw/main/ofl/nunito/Nunito%5Bwght%5D.ttf\")",
+      "Bash(.venv/bin/python -)",
+      "Bash(python3 -c \"from struct import unpack; [print\\(f, *unpack\\('>II', open\\('assets/'+f,'rb'\\).read\\(33\\)[16:24]\\)\\) for f in ['icon.png','adaptive-icon.png','logo-mark.png','splash.png']]\")"
     ]
   }
 }
