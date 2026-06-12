@@ -10,6 +10,8 @@ interface CalendarPickerProps {
   /** Range mode: highlight every day between start and end (inclusive). */
   rangeStart?: string | null;
   rangeEnd?: string | null;
+  /** Days before this ISO date are disabled (e.g. previous leg's end). */
+  minDate?: string | null;
 }
 
 const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -30,6 +32,7 @@ export function CalendarPicker({
   selectedDate,
   rangeStart,
   rangeEnd,
+  minDate,
 }: CalendarPickerProps) {
     const COLORS = useThemeColors();
     const styles = React.useMemo(() => makeStyles(COLORS), [COLORS]);
@@ -132,7 +135,7 @@ export function CalendarPicker({
           }
           const cellDate = new Date(viewYear, viewMonth, cell.day);
           const iso = toISODate(cellDate);
-          const isPast = cellDate < today;
+          const isPast = cellDate < today || (!!minDate && iso < minDate);
           const isToday = cellDate.getTime() === today.getTime();
           const isEndpoint =
             selectedDate === iso || rangeStart === iso || rangeEnd === iso;

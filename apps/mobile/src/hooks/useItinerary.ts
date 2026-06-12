@@ -4,10 +4,12 @@ import { itineraryService } from '../services/itinerary.service';
 import type { Itinerary } from '@gowander/shared-types';
 
 export interface GenerateRequest {
-    swipe_session_id: string;
-    destination_id: string;
-    start_date?: string;
-    end_date?: string;
+    legs: {
+        swipe_session_id: string;
+        destination_id: string;
+        start_date: string;
+        end_date: string;
+    }[];
     start_time?: string;
 }
 
@@ -31,10 +33,7 @@ export function useGenerateItinerary() {
     return useMutation({
         mutationFn: (req: GenerateRequest) =>
             itineraryService.generate({
-                swipe_session_id: req.swipe_session_id,
-                destination_id: req.destination_id,
-                start_date: req.start_date,
-                end_date: req.end_date,
+                legs: req.legs,
                 start_time: req.start_time ?? '09:00',
             }),
         onSuccess: (itinerary: Itinerary) => {

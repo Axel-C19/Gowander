@@ -4,21 +4,39 @@ from sqlalchemy import func
 from app.api.v1.deps import CurrentUser, DB
 from app.schemas.itinerary import ItineraryOut, GenerateItineraryRequest, RateItineraryRequest
 from app.models.itinerary import Itinerary, ItineraryRating
-from app.services.itinerary_engine import generate_itinerary
+from app.services.itinerary_engine import generate_multi_itinerary
 
 router = APIRouter(prefix="/itinerary", tags=["itinerary"])
 
 
 @router.post("/generate", response_model=ItineraryOut, status_code=201)
 def generate(body: GenerateItineraryRequest, current_user: CurrentUser, db: DB):
+    # Normalize: legs payload (multi-destination) or flat single-leg fields
+    if body.legs:
+        legs = [
+            {
+                "swipe_session_id": leg.swipe_session_id,
+                "destination_id": leg.destination_id,
+                "start_date": leg.start_date,
+                "end_date": leg.end_date,
+            }
+            for leg in body.legs
+        ]
+    elif body.swipe_session_id and body.destination_id:
+        legs = [{
+            "swipe_session_id": body.swipe_session_id,
+            "destination_id": body.destination_id,
+            "start_date": body.start_date,
+            "end_date": body.end_date,
+        }]
+    else:
+        raise HTTPException(status_code=422, detail="Provide legs or a swipe session + destination")
+
     try:
-        itinerary = generate_itinerary(
+        itinerary = generate_multi_itinerary(
             db=db,
             user_id=current_user.id,
-            swipe_session_id=body.swipe_session_id,
-            destination_id=body.destination_id,
-            start_date=body.start_date,
-            end_date=body.end_date,
+            legs=legs,
             start_time_str=body.start_time,
         )
     except ValueError as exc:

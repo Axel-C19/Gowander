@@ -44,7 +44,10 @@
       "Bash(.venv/bin/pip install *)",
       "Bash(curl -sL -o /tmp/nunito.ttf \"https://github.com/google/fonts/raw/main/ofl/nunito/Nunito%5Bwght%5D.ttf\")",
       "Bash(.venv/bin/python -)",
-      "Bash(python3 -c \"from struct import unpack; [print\\(f, *unpack\\('>II', open\\('assets/'+f,'rb'\\).read\\(33\\)[16:24]\\)\\) for f in ['icon.png','adaptive-icon.png','logo-mark.png','splash.png']]\")"
+      "Bash(python3 -c \"from struct import unpack; [print\\(f, *unpack\\('>II', open\\('assets/'+f,'rb'\\).read\\(33\\)[16:24]\\)\\) for f in ['icon.png','adaptive-icon.png','logo-mark.png','splash.png']]\")",
+      "Bash(curl -s -m 3 http://localhost:8000/api/v1/destinations -o /dev/null -w \"backend localhost: %{http_code}\\\\n\")",
+      "Bash(curl -s -m 3 http://172.20.10.4:8000/api/v1/destinations -o /dev/null -w \"backend via hotspot IP: %{http_code}\\\\n\")",
+      "Bash(sed -i '' 's|EXPO_PUBLIC_API_URL=http://192.168.50.103:8000|EXPO_PUBLIC_API_URL=http://172.20.10.4:8000|' apps/mobile/.env)"
     ]
   }
 }

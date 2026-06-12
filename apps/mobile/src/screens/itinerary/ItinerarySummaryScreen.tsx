@@ -26,7 +26,7 @@ export function ItinerarySummaryScreen() {
 
     const route = useRoute<ItinerarySummaryRouteProp>();
     const navigation = useNavigation<AppScreenNavigationProp>();
-    const { destination, swipeSessionId, startDate, endDate } = route.params;
+    const { destination, legs, startDate, endDate } = route.params;
 
     const generateItinerary = useGenerateItinerary();
     const saveItinerary = useSaveItinerary();
@@ -41,10 +41,12 @@ export function ItinerarySummaryScreen() {
     async function handleGenerate() {
         try {
             const result = await generateItinerary.mutateAsync({
-                swipe_session_id: swipeSessionId,
-                destination_id: String(destination.id),
-                start_date: startDate,
-                end_date: endDate,
+                legs: legs.map((l) => ({
+                    swipe_session_id: l.swipeSessionId,
+                    destination_id: l.destinationId,
+                    start_date: l.startDate,
+                    end_date: l.endDate,
+                })),
                 start_time: '09:00',
             });
             setItinerary(result);

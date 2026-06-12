@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Alert } from 'react-native';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { TripDateRouteProp, AppScreenNavigationProp } from '../../types/navigation';
 import { CalendarPicker } from '../../components/ui/CalendarPicker';
 import { Button } from '../../components/ui/Button';
 import { FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, type ThemeColors } from '../../constants';
 import { useThemeColors } from '../../hooks/useTheme';
+import { useTripStore } from '../../store/slices/trip.slice';
 import { useT } from '../../i18n';
 
 function formatShort(iso: string): string {
@@ -28,6 +29,10 @@ export function TripDateScreen() {
 
     const [startDate, setStartDate] = useState<string | null>(null);
     const [endDate, setEndDate] = useState<string | null>(null);
+    const legs = useTripStore((s) => s.legs);
+    const addLeg = useTripStore((s) => s.addLeg);
+    // A new leg can't start before the previous one ends
+    const minDate = legs.length ? legs[legs.length - 1].endDate : null;
 
     function handleSelectDate(iso: string) {
         if (!startDate || (startDate && endDate)) {
@@ -46,7 +51,18 @@ export function TripDateScreen() {
 
     function handleContinue() {
         if (!startDate || !endDate) return;
-        navigation.navigate('SwipeDeck', { destination, startDate, endDate });
+        addLeg({ destination, startDate, endDate });
+        Alert.alert(t('addAnotherTitle'), t('addAnotherMsg'), [
+            {
+                text: t('yesAnotherCity'),
+                onPress: () => navigation.navigate('Main'),
+            },
+            {
+                text: t('buildMyTrip'),
+                style: 'cancel',
+                onPress: () => navigation.navigate('SwipeDeck'),
+            },
+        ]);
     }
 
     const tripDays =
@@ -73,6 +89,7 @@ export function TripDateScreen() {
             <CalendarPicker
                 rangeStart={startDate}
                 rangeEnd={endDate}
+                minDate={minDate}
                 onSelectDate={handleSelectDate}
             />
 

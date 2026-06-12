@@ -2,30 +2,23 @@ import { ENDPOINTS } from '@gowander/shared-constants';
 import type { Itinerary } from '@gowander/shared-types';
 import { apiClient } from './api';
 
-export interface GenerateItineraryRequest {
+export interface GenerateLeg {
     swipe_session_id: string;
     destination_id: string;
-    start_date?: string;
-    end_date?: string;
+    start_date: string;
+    end_date: string;
+}
+
+export interface GenerateItineraryRequest {
+    legs: GenerateLeg[];
     start_time: string;
 }
 
 export const itineraryService = {
     async generate(request: GenerateItineraryRequest): Promise<Itinerary> {
-        const payload: Record<string, string> = {
-            swipe_session_id: request.swipe_session_id,
-            destination_id: request.destination_id,
-            start_time: request.start_time,
-        };
-        if (request.start_date) {
-            payload.start_date = request.start_date;
-        }
-        if (request.end_date) {
-            payload.end_date = request.end_date;
-        }
         const { data } = await apiClient.post<Itinerary>(
             ENDPOINTS.ITINERARY.GENERATE,
-            payload,
+            request,
         );
         return data;
     },

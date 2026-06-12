@@ -16,6 +16,7 @@ import type { Destination } from '@gowander/shared-types';
 import type { AppScreenNavigationProp } from '../../types/navigation';
 import { useDestinations } from '../../hooks/usePlaces';
 import { useAuthStore } from '../../store/slices/auth.slice';
+import { useTripStore } from '../../store/slices/trip.slice';
 import { FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, cardStyle, type ThemeColors } from '../../constants';
 import { useThemeColors } from '../../hooks/useTheme';
 import { useT } from '../../i18n';
@@ -302,6 +303,55 @@ const makeStyles = (COLORS: ThemeColors) => StyleSheet.create({
   rowCountry: {
     fontSize: FONT_SIZE.sm,
     color: COLORS.textMuted,
+  },
+  tripBanner: {
+    marginHorizontal: SPACING.md,
+    marginTop: SPACING.md,
+    backgroundColor: COLORS.primaryTint,
+    borderRadius: BORDER_RADIUS.lg,
+    padding: SPACING.md,
+    gap: 4,
+  },
+  tripBannerTitle: {
+    fontFamily: FONTS.heavy,
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.primaryDark,
+  },
+  tripBannerLeg: {
+    fontFamily: FONTS.heavy,
+    fontSize: FONT_SIZE.md,
+    color: COLORS.text,
+  },
+  tripBannerHint: {
+    fontSize: FONT_SIZE.xs,
+    color: COLORS.textMuted,
+    marginTop: 2,
+  },
+  tripBannerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
+    marginTop: SPACING.xs,
+  },
+  tripBannerButton: {
+    backgroundColor: COLORS.primary,
+    borderRadius: BORDER_RADIUS.full,
+    paddingHorizontal: SPACING.md,
+    paddingVertical: 8,
+  },
+  tripBannerButtonText: {
+    fontFamily: FONTS.heavy,
+    fontSize: FONT_SIZE.sm,
+    color: '#FFFFFF',
+  },
+  tripBannerCancel: {
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: 8,
+  },
+  tripBannerCancelText: {
+    fontFamily: FONTS.heavy,
+    fontSize: FONT_SIZE.sm,
+    color: COLORS.error,
   },
   errorText: { color: COLORS.error, fontSize: FONT_SIZE.md },
   emptyText: { textAlign: 'center', color: COLORS.textMuted, marginTop: SPACING.md },

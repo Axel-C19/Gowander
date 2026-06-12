@@ -94,22 +94,7 @@ def _minutes_to_hhmm(base_minutes: int) -> str:
 _DAY_END_MINUTES = 20 * 60   # 20:00
 
 
-def generate_itinerary(
-    db: Session,
-    user_id: uuid.UUID,
-    swipe_session_id: uuid.UUID,
-    destination_id: uuid.UUID,
-    start_date: date | None,
-    end_date: date | None = None,
-    start_time_str: str = "09:00",
-) -> Itinerary:
-    """
-    Core entry point. Returns a persisted Itinerary instance.
-    Supports multi-day trips: stops are packed into days respecting the
-    daily time budget and each place's opening days.
-    Raises ValueError for invalid inputs.
-    """
-    # ── 1. Load session and accepted places ───────────────────────────────
+def _load_accepted_places(db: Session, user_id: uuid.UUID, swipe_session_id: uuid.UUID) -> list[Place]:
     session = db.get(SwipeSession, swipe_session_id)
     if not session or session.user_id != user_id:
         raise ValueError("Swipe session not found")
@@ -124,27 +109,25 @@ def generate_itinerary(
         )
         .all()
     )
-    if not accepted_ids:
-        raise ValueError("No accepted places in this session")
-
     place_ids = [row[0] for row in accepted_ids]
-    places = db.query(Place).filter(Place.id.in_(place_ids)).all()
+    return db.query(Place).filter(Place.id.in_(place_ids)).all() if place_ids else []
 
-    start_date = start_date or date.today()
-    end_date = end_date or start_date
-    if end_date < start_date:
-        raise ValueError("End date must be on or after start date")
+
+def _pack_leg(
+    places: list[Place],
+    start_date: date,
+    end_date: date,
+    day_offset: int,
+    order_offset: int,
+    day_start_min: int,
+) -> tuple[list[dict], int]:
+    """Pack one leg's places into its date range. Day numbers continue
+    across legs via day_offset so the whole trip reads Day 1..N."""
     num_days = (end_date - start_date).days + 1
-
-    start_h, start_m = map(int, start_time_str.split(":"))
-    day_start_min = start_h * 60 + start_m
-
-    # ── 2. Route optimization (global order) ──────────────────────────────
     remaining = _nearest_neighbour_sort(places)
 
-    # ── 3. Pack stops into days ───────────────────────────────────────────
     stops_data: list[dict] = []
-    order_counter = 0
+    order_counter = order_offset
     total_duration = 0
 
     for day_index in range(num_days):
@@ -183,7 +166,7 @@ def generate_itinerary(
             stops_data.append({
                 "place": place,
                 "order": order_counter,
-                "day": day_index + 1,
+                "day": day_offset + day_index + 1,
                 "arrival_time": _minutes_to_hhmm(arrival),
                 "departure_time": _minutes_to_hhmm(departure),
                 "travel_time_to_next_minutes": 0,
@@ -197,28 +180,91 @@ def generate_itinerary(
 
         remaining = carry
 
-    destination = db.get(Destination, destination_id)
-    if num_days == 1:
-        title = f"{destination.city} — {start_date.strftime('%b %d')}"
-    else:
-        title = f"{destination.city} — {start_date.strftime('%b %d')}–{end_date.strftime('%b %d')}"
+    return stops_data, total_duration
 
-    # ── 4. Persist ────────────────────────────────────────────────────────
+
+def generate_multi_itinerary(
+    db: Session,
+    user_id: uuid.UUID,
+    legs: list[dict],
+    start_time_str: str = "09:00",
+) -> Itinerary:
+    """
+    Build one itinerary spanning one or more destination legs.
+    Each leg: {swipe_session_id, destination_id, start_date, end_date}.
+    Legs must be in chronological order; day numbers run across the whole trip.
+    """
+    if not legs:
+        raise ValueError("At least one destination is required")
+
+    start_h, start_m = map(int, start_time_str.split(":"))
+    day_start_min = start_h * 60 + start_m
+
+    # ── Validate dates and ordering ────────────────────────────────────────
+    normalized = []
+    prev_end: date | None = None
+    for leg in legs:
+        leg_start = leg["start_date"] or date.today()
+        leg_end = leg["end_date"] or leg_start
+        if leg_end < leg_start:
+            raise ValueError("End date must be on or after start date")
+        if prev_end and leg_start < prev_end:
+            raise ValueError("Each destination must start on or after the previous one ends")
+        normalized.append({**leg, "start_date": leg_start, "end_date": leg_end})
+        prev_end = leg_end
+
+    trip_start = normalized[0]["start_date"]
+    trip_end = normalized[-1]["end_date"]
+
+    # ── Pack each leg; days are anchored to real calendar offsets ─────────
+    all_stops: list[dict] = []
+    total_duration = 0
+    any_places = False
+
+    for leg in normalized:
+        places = _load_accepted_places(db, user_id, leg["swipe_session_id"])
+        if not places:
+            continue
+        any_places = True
+        day_offset = (leg["start_date"] - trip_start).days
+        stops, duration = _pack_leg(
+            places, leg["start_date"], leg["end_date"],
+            day_offset, len(all_stops), day_start_min,
+        )
+        all_stops.extend(stops)
+        total_duration += duration
+
+    if not any_places:
+        raise ValueError("No accepted places in this session")
+
+    # ── Title: all cities + trip date range ───────────────────────────────
+    cities = []
+    for leg in normalized:
+        destination = db.get(Destination, leg["destination_id"])
+        if destination and destination.city not in cities:
+            cities.append(destination.city)
+    city_part = " + ".join(cities[:3]) + (f" +{len(cities) - 3}" if len(cities) > 3 else "")
+    if trip_start == trip_end:
+        title = f"{city_part} — {trip_start.strftime('%b %d')}"
+    else:
+        title = f"{city_part} — {trip_start.strftime('%b %d')}–{trip_end.strftime('%b %d')}"
+
+    # ── Persist ────────────────────────────────────────────────────────────
     itinerary = Itinerary(
         user_id=user_id,
-        destination_id=destination_id,
-        swipe_session_id=swipe_session_id,
+        destination_id=normalized[0]["destination_id"],
+        swipe_session_id=normalized[0]["swipe_session_id"],
         title=title,
-        date=start_date,
-        end_date=end_date,
+        date=trip_start,
+        end_date=trip_end,
         start_time=start_time_str,
         total_duration_minutes=total_duration,
     )
     db.add(itinerary)
     db.flush()   # Get itinerary.id before creating stops
 
-    for s in stops_data:
-        stop = ItineraryStop(
+    for s in all_stops:
+        db.add(ItineraryStop(
             itinerary_id=itinerary.id,
             place_id=s["place"].id,
             order=s["order"],
@@ -228,9 +274,31 @@ def generate_itinerary(
             travel_time_to_next_minutes=s["travel_time_to_next_minutes"],
             travel_mode=s["travel_mode"],
             travel_distance_meters=s["travel_distance_meters"],
-        )
-        db.add(stop)
+        ))
 
     db.commit()
     db.refresh(itinerary)
     return itinerary
+
+
+def generate_itinerary(
+    db: Session,
+    user_id: uuid.UUID,
+    swipe_session_id: uuid.UUID,
+    destination_id: uuid.UUID,
+    start_date: date | None,
+    end_date: date | None = None,
+    start_time_str: str = "09:00",
+) -> Itinerary:
+    """Single-destination entry point — one leg of the multi-leg engine."""
+    return generate_multi_itinerary(
+        db,
+        user_id,
+        legs=[{
+            "swipe_session_id": swipe_session_id,
+            "destination_id": destination_id,
+            "start_date": start_date,
+            "end_date": end_date,
+        }],
+        start_time_str=start_time_str,
+    )

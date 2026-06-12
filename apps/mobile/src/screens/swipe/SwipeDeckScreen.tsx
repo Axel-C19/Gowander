@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     View,
     Text,
@@ -6,11 +6,12 @@ import {
     ActivityIndicator,
     Alert,
 } from 'react-native';
-import { useRoute, useNavigation } from '@react-navigation/native';
-import type { SwipeDeckRouteProp, AppScreenNavigationProp } from '../../types/navigation';
+import { useNavigation } from '@react-navigation/native';
+import type { AppScreenNavigationProp } from '../../types/navigation';
 import { usePlacesByDestination } from '../../hooks/usePlaces';
 import { useSwipeSession } from '../../hooks/useSwipe';
 import { useSwipeStore } from '../../store/slices/swipe.slice';
+import { useTripStore } from '../../store/slices/trip.slice';
 import { SwipeCard } from '../../components/swipe/SwipeCard';
 import { SwipeButtons } from '../../components/swipe/SwipeButtons';
 import { FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, type ThemeColors } from '../../constants';
@@ -20,16 +21,30 @@ import { INTERESTS } from '@gowander/shared-constants';
 import { useAuthStore } from '../../store/slices/auth.slice';
 import { useThemeColors } from '../../hooks/useTheme';
 
+interface CompletedLeg {
+    swipeSessionId: string;
+    destinationId: string;
+    startDate: string;
+    endDate: string;
+}
+
 export function SwipeDeckScreen() {
     const COLORS = useThemeColors();
     const styles = React.useMemo(() => makeStyles(COLORS), [COLORS]);
 
-
-    const route = useRoute<SwipeDeckRouteProp>();
     const navigation = useNavigation<AppScreenNavigationProp>();
-    const { destination, startDate, endDate } = route.params;
+    const legs = useTripStore((s) => s.legs);
+    const resetTrip = useTripStore((s) => s.resetTrip);
 
-    const destinationId = String(destination.id);
+    // Which leg's deck is currently being swiped
+    const [legIndex, setLegIndex] = useState(0);
+    const completedLegs = useRef<CompletedLeg[]>([]);
+
+    const leg = legs[legIndex];
+    const destination = leg?.destination;
+    const destinationId = String(destination?.id ?? '');
+    const startDate = leg?.startDate ?? '';
+    const endDate = leg?.endDate ?? '';
 
     const { data: placesData, isLoading: placesLoading, error: placesError } =
         usePlacesByDestination(destinationId);
@@ -42,7 +57,18 @@ export function SwipeDeckScreen() {
     // Guard prevents a second swipe from firing before the first resolves.
     // Without this, fast gestures produce a stale-closure race that skips cards.
     const isProcessingSwipe = useRef(false);
-    // Reset any previous session when entering this screen
+
+    // Header shows which city is being swiped (and leg progress on multi-city trips)
+    useEffect(() => {
+        if (!destination) return;
+        navigation.setOptions({
+            title: legs.length > 1
+                ? `${destination.city} (${legIndex + 1}/${legs.length})`
+                : destination.city,
+        });
+    }, [destination?.city, legIndex, legs.length]);
+
+    // Reset the swipe session whenever the current leg changes
     useEffect(() => {
         resetSession();
     }, [destinationId]);
@@ -76,14 +102,30 @@ export function SwipeDeckScreen() {
         });
     }, [placesData?.items?.length, sessionId]);
 
-    // Navigate when all cards are swiped
+    // Leg deck finished → next leg, or generate the trip
     useEffect(() => {
-        if (isSessionComplete && sessionId) {
+        if (!isSessionComplete || !sessionId || !leg) return;
+
+        completedLegs.current.push({
+            swipeSessionId: sessionId,
+            destinationId: String(destination.id),
+            startDate,
+            endDate,
+        });
+
+        if (legIndex < legs.length - 1) {
+            resetSession();
+            setLegIndex(legIndex + 1);
+        } else {
+            const allLegs = [...completedLegs.current];
+            const first = legs[0];
+            const last = legs[legs.length - 1];
+            resetTrip();
             navigation.replace('ItinerarySummary', {
-                swipeSessionId: sessionId,
-                destination,
-                startDate,
-                endDate,
+                legs: allLegs,
+                destination: first.destination,
+                startDate: first.startDate,
+                endDate: last.endDate,
             });
         }
     }, [isSessionComplete, sessionId]);
@@ -93,7 +135,7 @@ export function SwipeDeckScreen() {
         const card = cards[currentIndex];
         if (!card) return;
 
-        // Places closed on the travel date can't be accepted — only dismissed
+        // Places closed during this leg's dates can't be accepted — only dismissed
         if (decision === 'accepted' && !isPlaceOpenInRange(card.opening_hours, startDate, endDate)) {
             Alert.alert(
                 'Not available',
@@ -122,6 +164,14 @@ export function SwipeDeckScreen() {
     }
 
     // ── Render states ─────────────────────────────────────────────────────
+    if (!leg) {
+        return (
+            <View style={styles.centered}>
+                <Text style={styles.errorText}>No destinations selected.</Text>
+            </View>
+        );
+    }
+
     if (placesLoading) {
         return (
             <View style={styles.centered}>
@@ -184,6 +234,12 @@ export function SwipeDeckScreen() {
                 </Text>
             </View>
 
+            {legs.length > 1 && (
+                <Text style={styles.legBanner}>
+                    📍 {destination.city} · {legIndex + 1} of {legs.length} cities
+                </Text>
+            )}
+
             <View style={styles.deckArea}>
                 {cards.slice(currentIndex, currentIndex + 3).map((card, i) => (
                     <SwipeCard
@@ -242,6 +298,13 @@ const makeStyles = (COLORS: ThemeColors) => StyleSheet.create({
         fontFamily: FONTS.heavy,
         color: COLORS.textMuted,
         fontSize: FONT_SIZE.sm,
+    },
+    legBanner: {
+        fontFamily: FONTS.heavy,
+        fontSize: FONT_SIZE.sm,
+        color: COLORS.primary,
+        textAlign: 'center',
+        marginTop: SPACING.xs,
     },
     deckArea: {
         flex: 1,

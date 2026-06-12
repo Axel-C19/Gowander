@@ -8,9 +8,19 @@ from .place import PlaceOut
 from .destination import DestinationOut
 
 
-class GenerateItineraryRequest(BaseModel):
+class ItineraryLegIn(BaseModel):
     swipe_session_id: uuid.UUID
     destination_id: uuid.UUID
+    start_date: Optional[dt.date] = None
+    end_date: Optional[dt.date] = None
+
+
+class GenerateItineraryRequest(BaseModel):
+    # Multi-destination trips send `legs`; single-destination clients may
+    # still send the flat fields below instead.
+    legs: Optional[list[ItineraryLegIn]] = None
+    swipe_session_id: Optional[uuid.UUID] = None
+    destination_id: Optional[uuid.UUID] = None
     # NOTE: fields holding dates must not use the bare `date` type when a field
     # is named "date" — the name shadows it during model build.
     start_date: Optional[dt.date] = None

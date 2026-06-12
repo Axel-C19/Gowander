@@ -21,16 +21,17 @@ export type AppStackParamList = {
     TripDate: {
         destination: Destination;
     };
-    SwipeDeck: {
-        destination: Destination;
-        startDate: string; // ISO "YYYY-MM-DD"
-        endDate: string;
-    };
+    SwipeDeck: undefined; // Legs come from the trip store
     ItinerarySummary: {
-        swipeSessionId: string;
-        destination: Destination;
-        startDate: string;
-        endDate: string;
+        legs: {
+            swipeSessionId: string;
+            destinationId: string;
+            startDate: string;
+            endDate: string;
+        }[];
+        destination: Destination; // First leg's destination (display)
+        startDate: string;        // Trip start
+        endDate: string;          // Trip end
     };
     MapView: {
         itinerary: Itinerary;

@@ -82,6 +82,15 @@ const en = {
   noPublicTripsHint: 'Publish one of your itineraries and it will show up here for everyone.',
   noRatings: 'No ratings yet',
   by: 'by',
+  // Multi-destination
+  addAnotherTitle: 'Add another destination?',
+  addAnotherMsg: 'You can visit several cities in one trip.',
+  yesAnotherCity: 'Yes, add a city',
+  buildMyTrip: 'No, build my trip',
+  tripSoFar: 'Your trip so far',
+  nextCityHint: 'Pick your next city below, or start swiping.',
+  startSwiping: 'Start swiping',
+  cancelTrip: 'Cancel trip',
 };
 
 export type TranslationKey = keyof typeof en;
@@ -154,6 +163,14 @@ const es: Record<TranslationKey, string> = {
   noPublicTripsHint: 'Publica uno de tus itinerarios y aparecerá aquí para todos.',
   noRatings: 'Sin calificaciones aún',
   by: 'por',
+  addAnotherTitle: '¿Agregar otro destino?',
+  addAnotherMsg: 'Puedes visitar varias ciudades en un solo viaje.',
+  yesAnotherCity: 'Sí, agregar ciudad',
+  buildMyTrip: 'No, crear mi viaje',
+  tripSoFar: 'Tu viaje hasta ahora',
+  nextCityHint: 'Elige tu siguiente ciudad abajo, o empieza a deslizar.',
+  startSwiping: 'Empezar a deslizar',
+  cancelTrip: 'Cancelar viaje',
 };
 
 const fr: Record<TranslationKey, string> = {
@@ -224,6 +241,14 @@ const fr: Record<TranslationKey, string> = {
   noPublicTripsHint: 'Publie un de tes itinéraires et il apparaîtra ici pour tous.',
   noRatings: 'Pas encore de notes',
   by: 'par',
+  addAnotherTitle: 'Ajouter une autre destination ?',
+  addAnotherMsg: 'Tu peux visiter plusieurs villes en un seul voyage.',
+  yesAnotherCity: 'Oui, ajouter une ville',
+  buildMyTrip: 'Non, créer mon voyage',
+  tripSoFar: 'Ton voyage jusqu’ici',
+  nextCityHint: 'Choisis ta prochaine ville ci-dessous, ou commence à swiper.',
+  startSwiping: 'Commencer à swiper',
+  cancelTrip: 'Annuler le voyage',
 };
 
 const de: Record<TranslationKey, string> = {
@@ -294,6 +319,14 @@ const de: Record<TranslationKey, string> = {
   noPublicTripsHint: 'Veröffentliche eine Route und sie erscheint hier für alle.',
   noRatings: 'Noch keine Bewertungen',
   by: 'von',
+  addAnotherTitle: 'Weiteres Ziel hinzufügen?',
+  addAnotherMsg: 'Du kannst mehrere Städte in einer Reise besuchen.',
+  yesAnotherCity: 'Ja, Stadt hinzufügen',
+  buildMyTrip: 'Nein, Reise erstellen',
+  tripSoFar: 'Deine Reise bisher',
+  nextCityHint: 'Wähle unten deine nächste Stadt oder starte das Swipen.',
+  startSwiping: 'Swipen starten',
+  cancelTrip: 'Reise abbrechen',
 };
 
 const DICTIONARIES: Record<Language, Record<TranslationKey, string>> = { en, es, fr, de };
