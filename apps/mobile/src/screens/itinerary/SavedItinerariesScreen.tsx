@@ -6,8 +6,8 @@ import {
     FlatList,
     TouchableOpacity,
     ActivityIndicator,
-    Alert,
 } from 'react-native';
+import { showAlert } from '../../components/ui/AppDialog';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { AppScreenNavigationProp } from '../../types/navigation';
@@ -28,7 +28,7 @@ export function SavedItinerariesScreen() {
     const { shareTrip } = useShareTrip();
 
     function handleDelete(trip: Itinerary) {
-        Alert.alert(
+        showAlert(
             'Delete trip?',
             `"${trip.title}" will be gone for good.`,
             [
@@ -40,7 +40,7 @@ export function SavedItinerariesScreen() {
                         try {
                             await deleteItinerary.mutateAsync(String(trip.id));
                         } catch (err) {
-                            Alert.alert(
+                            showAlert(
                                 'Could not delete',
                                 err instanceof Error ? err.message : 'Please try again.',
                             );

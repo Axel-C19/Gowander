@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     GOOGLE_PLACES_API_KEY: str = ""
     GOOGLE_MAPS_API_KEY: str = ""
 
+    # SerpAPI key for live Google Flights results. Empty = offline estimates.
+    SERPAPI_KEY: str = ""
+
     # OAuth client IDs accepted as `aud` on Google ID tokens (comma-separated:
     # web, iOS and Android client IDs). Empty = Google sign-in disabled.
     GOOGLE_OAUTH_CLIENT_IDS: str = ""

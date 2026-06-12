@@ -9,6 +9,7 @@ import {
     Nunito_800ExtraBold,
 } from '@expo-google-fonts/nunito';
 import { RootNavigator } from './src/navigation';
+import { AppDialogHost } from './src/components/ui/AppDialog';
 import { COLORS, FONTS, THEMES } from './src/constants';
 import { useSettingsStore } from './src/store/slices/settings.slice';
 import { useIsDark } from './src/hooks/useTheme';
@@ -47,6 +48,7 @@ function ThemedApp() {
         <>
             <StatusBar style={isDark ? 'light' : 'dark'} backgroundColor={palette.background} />
             <RootNavigator />
+            <AppDialogHost />
         </>
     );
 }

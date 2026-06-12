@@ -8,8 +8,8 @@ import {
     StyleSheet,
     ActivityIndicator,
     Image,
-    Alert,
 } from 'react-native';
+import { showAlert } from '../../components/ui/AppDialog';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { Destination } from '@gowander/shared-types';
@@ -45,7 +45,7 @@ export function AddCityScreen() {
     const { data: destinations = [], isLoading } = useDestinations();
 
     function handleCancelTrip() {
-        Alert.alert(t('cancelTripTitle'), t('cancelTripMsg'), [
+        showAlert(t('cancelTripTitle'), t('cancelTripMsg'), [
             { text: t('keepGoing'), style: 'cancel' },
             {
                 text: t('cancelTrip'),

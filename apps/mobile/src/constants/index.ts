@@ -26,7 +26,7 @@ const LIGHT_COLORS = {
   swipeAccept: '#58CC02',
   swipeReject: '#FF4B4B',
   cardShadow: 'rgba(61, 51, 41, 0.08)',
-} as const;
+};
 
 // Warm "midnight journal" dark counterpart of the light palette
 const DARK_COLORS: typeof LIGHT_COLORS = {

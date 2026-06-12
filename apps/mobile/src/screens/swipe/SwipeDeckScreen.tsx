@@ -4,9 +4,9 @@ import {
     Text,
     StyleSheet,
     ActivityIndicator,
-    Alert,
     TouchableOpacity,
 } from 'react-native';
+import { showAlert } from '../../components/ui/AppDialog';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { AppScreenNavigationProp } from '../../types/navigation';
@@ -74,7 +74,7 @@ export function SwipeDeckScreen() {
             headerRight: () => (
                 <TouchableOpacity
                     onPress={() => {
-                        Alert.alert(t('cancelTripTitle'), t('cancelTripMsg'), [
+                        showAlert(t('cancelTripTitle'), t('cancelTripMsg'), [
                             { text: t('keepGoing'), style: 'cancel' },
                             {
                                 text: t('cancelTrip'),
@@ -124,7 +124,7 @@ export function SwipeDeckScreen() {
                 setSession(String(session.id), orderedCards);
             },
             onError: () => {
-                Alert.alert('Error', 'Could not start swipe session. Please go back and try again.');
+                showAlert('Error', 'Could not start swipe session. Please go back and try again.');
             },
         });
     }, [placesData?.items?.length, sessionId]);
@@ -164,7 +164,7 @@ export function SwipeDeckScreen() {
 
         // Places closed during this leg's dates can't be accepted — only dismissed
         if (decision === 'accepted' && !isPlaceOpenInRange(card.opening_hours, startDate, endDate)) {
-            Alert.alert(
+            showAlert(
                 'Not available',
                 `${card.name} is closed during your trip dates. You can only skip it.`,
             );
@@ -185,7 +185,7 @@ export function SwipeDeckScreen() {
             try {
                 await finish.mutateAsync();
             } catch {
-                Alert.alert('Error', 'Could not save selections. Please try again.');
+                showAlert('Error', 'Could not save selections. Please try again.');
             }
         }
     }

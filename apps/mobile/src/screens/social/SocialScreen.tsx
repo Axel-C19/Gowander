@@ -6,8 +6,8 @@ import {
     ScrollView,
     TextInput,
     TouchableOpacity,
-    Alert,
 } from 'react-native';
+import { showAlert } from '../../components/ui/AppDialog';
 import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { AppScreenNavigationProp } from '../../types/navigation';
@@ -59,10 +59,10 @@ export function SocialScreen() {
     async function handleAdd(user: UserPublic) {
         try {
             await sendRequest.mutateAsync(String(user.id));
-            Alert.alert('Request sent', `${user.full_name} will see your friend request.`);
+            showAlert('Request sent', `${user.full_name} will see your friend request.`);
             setResults(results.filter((r) => r.id !== user.id));
         } catch (err) {
-            Alert.alert('Could not send request', err instanceof Error ? err.message : '');
+            showAlert('Could not send request', err instanceof Error ? err.message : '');
         }
     }
 

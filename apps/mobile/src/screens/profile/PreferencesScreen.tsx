@@ -5,8 +5,8 @@ import {
     StyleSheet,
     TouchableOpacity,
     ScrollView,
-    Alert,
 } from 'react-native';
+import { showAlert } from '../../components/ui/AppDialog';
 import { useNavigation } from '@react-navigation/native';
 import type { AppScreenNavigationProp } from '../../types/navigation';
 import { useAuthStore } from '../../store/slices/auth.slice';
@@ -53,7 +53,7 @@ export function PreferencesScreen() {
                 navigation.goBack();
             }
         } catch (err) {
-            Alert.alert(
+            showAlert(
                 'Could not save preferences',
                 err instanceof Error ? err.message : 'Please try again.',
             );

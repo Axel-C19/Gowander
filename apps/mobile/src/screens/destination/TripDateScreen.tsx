@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { showAlert } from '../../components/ui/AppDialog';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { TripDateRouteProp, AppScreenNavigationProp } from '../../types/navigation';
@@ -44,7 +45,7 @@ export function TripDateScreen() {
             headerRight: () => (
                 <TouchableOpacity
                     onPress={() => {
-                        Alert.alert(t('cancelTripTitle'), t('cancelTripMsg'), [
+                        showAlert(t('cancelTripTitle'), t('cancelTripMsg'), [
                             { text: t('keepGoing'), style: 'cancel' },
                             {
                                 text: t('cancelTrip'),
@@ -84,7 +85,7 @@ export function TripDateScreen() {
     function handleContinue() {
         if (!startDate || !endDate) return;
         addLeg({ destination, startDate, endDate });
-        Alert.alert(t('addAnotherTitle'), t('addAnotherMsg'), [
+        showAlert(t('addAnotherTitle'), t('addAnotherMsg'), [
             {
                 text: t('yesAnotherCity'),
                 onPress: () => navigation.replace('AddCity'),

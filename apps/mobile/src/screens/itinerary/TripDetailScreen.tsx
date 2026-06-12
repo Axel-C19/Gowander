@@ -1,13 +1,17 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { showAlert } from '../../components/ui/AppDialog';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { TripDetailRouteProp, AppScreenNavigationProp } from '../../types/navigation';
 import { useItinerary, useDeleteItinerary, useRateItinerary } from '../../hooks/useItinerary';
 import { useShareTrip } from '../../hooks/useShareTrip';
 import { useAuthStore } from '../../store/slices/auth.slice';
 import { ItineraryStopsList } from '../../components/itinerary/ItineraryStopsList';
+import { TransfersSection } from '../../components/itinerary/TransfersSection';
 import { Button } from '../../components/ui/Button';
 import { StarRating } from '../../components/ui/StarRating';
+import { openRouteInGoogleMaps } from '../../utils/googleMaps';
+import { useT } from '../../i18n';
 import { FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, cardStyle, type ThemeColors } from '../../constants';
 import { formatDuration } from '@gowander/shared-utils';
 import { useThemeColors } from '../../hooks/useTheme';
@@ -18,6 +22,7 @@ export function TripDetailScreen() {
 
     const route = useRoute<TripDetailRouteProp>();
     const navigation = useNavigation<AppScreenNavigationProp>();
+    const t = useT();
 
     // The query cache is refreshed by publish/unpublish mutations, so prefer
     // it over the (possibly stale) navigation param.
@@ -38,7 +43,7 @@ export function TripDetailScreen() {
             { id: String(itinerary.id), stars },
             {
                 onError: (err) =>
-                    Alert.alert(
+                    showAlert(
                         'Could not save rating',
                         err instanceof Error ? err.message : 'Please try again.',
                     ),
@@ -47,7 +52,7 @@ export function TripDetailScreen() {
     }
 
     function handleDelete() {
-        Alert.alert(
+        showAlert(
             'Delete trip?',
             `"${itinerary.title}" will be gone for good.`,
             [
@@ -60,7 +65,7 @@ export function TripDetailScreen() {
                             await deleteItinerary.mutateAsync(String(itinerary.id));
                             navigation.goBack();
                         } catch (err) {
-                            Alert.alert(
+                            showAlert(
                                 'Could not delete',
                                 err instanceof Error ? err.message : 'Please try again.',
                             );
@@ -100,10 +105,19 @@ export function TripDetailScreen() {
             {/* Stops, same list layout as the post-creation summary */}
             <ItineraryStopsList itinerary={itinerary} />
 
+            {/* Transport between cities (multi-destination trips) */}
+            <TransfersSection itinerary={itinerary} readOnly={!isOwner} />
+
             <Button
                 title="View on map"
                 onPress={() => navigation.navigate('MapView', { itinerary })}
                 style={{ marginTop: SPACING.lg }}
+            />
+            <Button
+                title={t('openInGoogleMaps')}
+                variant="quiet"
+                onPress={() => openRouteInGoogleMaps(itinerary)}
+                style={{ marginTop: SPACING.sm }}
             />
 
             {isOwner ? (

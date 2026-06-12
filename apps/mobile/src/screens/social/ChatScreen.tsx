@@ -8,8 +8,8 @@ import {
     TouchableOpacity,
     KeyboardAvoidingView,
     Platform,
-    Alert,
 } from 'react-native';
+import { showAlert } from '../../components/ui/AppDialog';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useRoute, useNavigation } from '@react-navigation/native';
@@ -47,7 +47,7 @@ export function ChatScreen() {
         try {
             await sendMessage.mutateAsync({ text: trimmed });
         } catch (err) {
-            Alert.alert('Could not send', err instanceof Error ? err.message : '');
+            showAlert('Could not send', err instanceof Error ? err.message : '');
         }
     }
 
@@ -56,7 +56,7 @@ export function ChatScreen() {
             const itinerary = await itineraryService.getById(itineraryId);
             navigation.navigate('TripDetail', { itinerary });
         } catch {
-            Alert.alert('Trip unavailable', 'This trip may have been deleted.');
+            showAlert('Trip unavailable', 'This trip may have been deleted.');
         }
     }
 

@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@gowander/shared-constants';
 import { itineraryService } from '../services/itinerary.service';
-import type { Itinerary } from '@gowander/shared-types';
+import type { Itinerary, SelectTransferRequest } from '@gowander/shared-types';
 
 export interface GenerateRequest {
     legs: {
@@ -81,6 +81,18 @@ export function useRateItinerary() {
         onSuccess: (itinerary: Itinerary) => {
             // Re-rank the explore feed and refresh the trip detail
             queryClient.invalidateQueries({ queryKey: ['explore'] });
+            queryClient.setQueryData(QUERY_KEYS.ITINERARY(String(itinerary.id)), itinerary);
+        },
+    });
+}
+
+export function useSelectTransfer() {
+    const queryClient = useQueryClient();
+    return useMutation({
+        mutationFn: ({ id, payload }: { id: string; payload: SelectTransferRequest }) =>
+            itineraryService.selectTransfer(id, payload),
+        onSuccess: (itinerary: Itinerary) => {
+            queryClient.invalidateQueries({ queryKey: QUERY_KEYS.ITINERARIES });
             queryClient.setQueryData(QUERY_KEYS.ITINERARY(String(itinerary.id)), itinerary);
         },
     });

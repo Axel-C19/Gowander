@@ -9,8 +9,8 @@ import {
     ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
-    Alert,
 } from 'react-native';
+import { showAlert } from '../../components/ui/AppDialog';
 import { Ionicons } from '@expo/vector-icons';
 import * as WebBrowser from 'expo-web-browser';
 import * as Linking from 'expo-linking';
@@ -53,14 +53,14 @@ export function LoginScreen() {
 
         if (!token) {
             if (error && error !== 'access_denied' && error !== 'cancelled') {
-                Alert.alert('Google sign-in failed', error);
+                showAlert('Google sign-in failed', error);
             }
             return;
         }
         try {
             await googleLogin.mutateAsync(token);
         } catch (err) {
-            Alert.alert(
+            showAlert(
                 'Google sign-in failed',
                 err instanceof Error ? err.message : 'Please try again.',
             );
@@ -69,13 +69,13 @@ export function LoginScreen() {
 
     async function handleLogin() {
         if (!email.trim() || !password.trim()) {
-            Alert.alert('Missing fields', 'Please enter your email and password.');
+            showAlert('Missing fields', 'Please enter your email and password.');
             return;
         }
         try {
             await login.mutateAsync({ email: email.trim().toLowerCase(), password });
         } catch (err) {
-            Alert.alert('Login failed', err instanceof Error ? err.message : 'Unknown error');
+            showAlert('Login failed', err instanceof Error ? err.message : 'Unknown error');
         }
     }
 

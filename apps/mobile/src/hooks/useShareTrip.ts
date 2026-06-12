@@ -1,4 +1,5 @@
-import { Alert } from 'react-native';
+import { showAlert } from '../components/ui/AppDialog';
+
 import { useNavigation } from '@react-navigation/native';
 import type { AppScreenNavigationProp } from '../types/navigation';
 import { usePublishItinerary } from './useItinerary';
@@ -14,7 +15,7 @@ export function useShareTrip(onUpdated?: (itinerary: Itinerary) => void) {
     const publishItinerary = usePublishItinerary();
 
     function shareTrip(itinerary: Itinerary) {
-        Alert.alert('Share trip', 'How do you want to share it?', [
+        showAlert('Share trip', 'How do you want to share it?', [
             {
                 text: itinerary.is_public ? 'Remove from Explore' : 'Publish to Explore',
                 onPress: async () => {
@@ -25,7 +26,7 @@ export function useShareTrip(onUpdated?: (itinerary: Itinerary) => void) {
                         });
                         onUpdated?.(updated);
                     } catch (err) {
-                        Alert.alert('Could not update', err instanceof Error ? err.message : '');
+                        showAlert('Could not update', err instanceof Error ? err.message : '');
                     }
                 },
             },

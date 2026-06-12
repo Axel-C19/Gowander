@@ -21,7 +21,7 @@ import uuid
 from datetime import date, timedelta
 from sqlalchemy.orm import Session
 
-from app.models.itinerary import Itinerary, ItineraryStop
+from app.models.itinerary import Itinerary, ItineraryStop, ItineraryLeg
 from app.models.swipe_session import SwipeAction, SwipeSession
 from app.models.place import Place
 from app.models.destination import Destination
@@ -121,7 +121,9 @@ def _pack_leg(
     order_offset: int,
     day_start_min: int,
 ) -> tuple[list[dict], int]:
-    """Pack one leg's places into its date range. Day numbers continue
+    """Pack one leg's places into its date range, spreading them evenly
+    across the available days: a 6-place, 3-day leg becomes ~2 places per
+    day instead of everything crammed into day 1. Day numbers continue
     across legs via day_offset so the whole trip reads Day 1..N."""
     num_days = (end_date - start_date).days + 1
     remaining = _nearest_neighbour_sort(places)
@@ -137,11 +139,23 @@ def _pack_leg(
         day_name = current_date.strftime("%A").lower()
         is_last_day = day_index == num_days - 1
 
+        # Balanced quota: split what's left over the days that remain.
+        # ceil() so early days take the larger share when it doesn't divide
+        # evenly (5 places / 3 days → 2, 2, 1).
+        days_left = num_days - day_index
+        day_quota = -(-len(remaining) // days_left)   # ceil division
+
         cursor_min = day_start_min
+        placed_today = 0
         carry: list[Place] = []
         prev_place: Place | None = None
 
         for place in remaining:
+            # Quota met → save the rest for the following days
+            if placed_today >= day_quota and not is_last_day:
+                carry.append(place)
+                continue
+
             # Closed this weekday → try another day (unless it's the last one)
             if not _is_open_on_day(place, day_name, cursor_min // 60) and not is_last_day:
                 carry.append(place)
@@ -174,6 +188,7 @@ def _pack_leg(
                 "travel_distance_meters": 0,
             })
             order_counter += 1
+            placed_today += 1
             total_duration += departure - arrival + travel
             cursor_min = departure
             prev_place = place
@@ -262,6 +277,17 @@ def generate_multi_itinerary(
     )
     db.add(itinerary)
     db.flush()   # Get itinerary.id before creating stops
+
+    # Persist legs so saved trips know their city boundaries (transfers
+    # between consecutive legs are chosen by the user afterwards)
+    for position, leg in enumerate(normalized):
+        db.add(ItineraryLeg(
+            itinerary_id=itinerary.id,
+            destination_id=leg["destination_id"],
+            position=position,
+            start_date=leg["start_date"],
+            end_date=leg["end_date"],
+        ))
 
     for s in all_stops:
         db.add(ItineraryStop(

@@ -47,7 +47,25 @@
       "Bash(python3 -c \"from struct import unpack; [print\\(f, *unpack\\('>II', open\\('assets/'+f,'rb'\\).read\\(33\\)[16:24]\\)\\) for f in ['icon.png','adaptive-icon.png','logo-mark.png','splash.png']]\")",
       "Bash(curl -s -m 3 http://localhost:8000/api/v1/destinations -o /dev/null -w \"backend localhost: %{http_code}\\\\n\")",
       "Bash(curl -s -m 3 http://172.20.10.4:8000/api/v1/destinations -o /dev/null -w \"backend via hotspot IP: %{http_code}\\\\n\")",
-      "Bash(sed -i '' 's|EXPO_PUBLIC_API_URL=http://192.168.50.103:8000|EXPO_PUBLIC_API_URL=http://172.20.10.4:8000|' apps/mobile/.env)"
+      "Bash(sed -i '' 's|EXPO_PUBLIC_API_URL=http://192.168.50.103:8000|EXPO_PUBLIC_API_URL=http://172.20.10.4:8000|' apps/mobile/.env)",
+      "Bash(sed -n 260,300p apps/backend/app/services/itinerary_engine.py)",
+      "Bash(sed -n 1,60p apps/mobile/src/i18n/index.ts)",
+      "Bash(.venv/bin/python -m pytest tests/integration/test_flights.py -q)",
+      "Bash(sed -n 25,55p src/navigation/AppStack.tsx)",
+      "Bash(sed -n 340,358p src/i18n/index.ts)",
+      "Bash(cd ../mobile && grep -rn \"Alert.alert\" src --include=\"*.tsx\" --include=\"*.ts\" -l | sort; echo ----; grep -rn \"Alert.alert\" src | wc -l)",
+      "Bash(grep \"import\\\\|Alert,\\\\|{ Alert }\")",
+      "Bash(ipconfig getifaddr *)",
+      "Bash(pdftotext \"/Users/axelcaldera/Downloads/FriendFrame Movil Pruebas.pdf\" ff.txt)",
+      "Bash(mkdir -p /tmp/gw-deck)",
+      "Bash(npm init *)",
+      "Bash(node deck.js)",
+      "Bash(python3 \"/Users/axelcaldera/Library/Application Support/Claude/local-agent-mode-sessions/skills-plugin/cc7130a3-1003-4ea9-8f7e-bae65bf051ab/f5b7abf8-f072-4910-9d65-4905faaf9135/skills/pptx/scripts/office/soffice.py\" --headless --convert-to pdf GoWander-Presentacion.pptx)",
+      "Bash(rm -f slide-*.jpg)",
+      "Bash(pdftoppm -jpeg -r 80 GoWander-Presentacion.pdf slide)",
+      "Bash(soffice --headless --convert-to pdf GoWander-Presentacion.pptx)",
+      "Bash(pdftoppm -jpeg -r 80 -f 5 -l 5 GoWander-Presentacion.pdf s5)",
+      "Bash(pdftoppm -jpeg -r 80 -f 19 -l 20 GoWander-Presentacion.pdf s19)"
     ]
   }
 }

@@ -1,5 +1,5 @@
 import { ENDPOINTS } from '@gowander/shared-constants';
-import type { Itinerary } from '@gowander/shared-types';
+import type { Itinerary, SelectTransferRequest } from '@gowander/shared-types';
 import { apiClient } from './api';
 
 export interface GenerateLeg {
@@ -50,6 +50,14 @@ export const itineraryService = {
 
     async rate(id: string, stars: number): Promise<Itinerary> {
         const { data } = await apiClient.post<Itinerary>(ENDPOINTS.ITINERARY.RATE(id), { stars });
+        return data;
+    },
+
+    async selectTransfer(id: string, payload: SelectTransferRequest): Promise<Itinerary> {
+        const { data } = await apiClient.put<Itinerary>(
+            ENDPOINTS.ITINERARY.TRANSFERS(id),
+            payload,
+        );
         return data;
     },
 

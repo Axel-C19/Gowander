@@ -40,6 +40,51 @@ class ItineraryStopOut(BaseModel):
     travel_mode: Literal["walking", "driving", "transit"]
 
 
+class ItineraryLegOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    position: int
+    destination: DestinationOut
+    start_date: Optional[dt.date] = None
+    end_date: Optional[dt.date] = None
+
+
+TransferMode = Literal["flight", "train", "bus", "car"]
+
+
+class ItineraryTransferOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    position: int
+    from_destination: DestinationOut
+    to_destination: DestinationOut
+    travel_date: Optional[dt.date] = None
+    mode: TransferMode
+    duration_minutes: Optional[int] = None
+    price: Optional[float] = None
+    airline: Optional[str] = None
+    flight_number: Optional[str] = None
+    departure_time: Optional[str] = None
+    arrival_time: Optional[str] = None
+    from_airport: Optional[str] = None
+    to_airport: Optional[str] = None
+    flight_stops: int = 0
+
+
+class SelectTransferRequest(BaseModel):
+    position: int = Field(ge=0)
+    mode: TransferMode
+    duration_minutes: Optional[int] = None
+    price: Optional[float] = None
+    airline: Optional[str] = None
+    flight_number: Optional[str] = None
+    departure_time: Optional[str] = None
+    arrival_time: Optional[str] = None
+    from_airport: Optional[str] = None
+    to_airport: Optional[str] = None
+    flight_stops: int = 0
+
+
 class ItineraryOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
@@ -54,6 +99,8 @@ class ItineraryOut(BaseModel):
     is_saved: bool = False
     is_public: bool = False
     stops: list[ItineraryStopOut]
+    legs: list[ItineraryLegOut] = []
+    transfers: list[ItineraryTransferOut] = []
     created_at: dt.datetime
     updated_at: dt.datetime
     # Rating summary — populated for public trips (explore feed, trip detail)

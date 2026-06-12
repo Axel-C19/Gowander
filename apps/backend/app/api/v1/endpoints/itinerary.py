@@ -2,8 +2,13 @@ from fastapi import APIRouter, HTTPException
 import uuid
 from sqlalchemy import func
 from app.api.v1.deps import CurrentUser, DB
-from app.schemas.itinerary import ItineraryOut, GenerateItineraryRequest, RateItineraryRequest
-from app.models.itinerary import Itinerary, ItineraryRating
+from app.schemas.itinerary import (
+    ItineraryOut,
+    GenerateItineraryRequest,
+    RateItineraryRequest,
+    SelectTransferRequest,
+)
+from app.models.itinerary import Itinerary, ItineraryRating, ItineraryTransfer
 from app.services.itinerary_engine import generate_multi_itinerary
 
 router = APIRouter(prefix="/itinerary", tags=["itinerary"])
@@ -130,6 +135,61 @@ def get_itinerary(itinerary_id: uuid.UUID, current_user: CurrentUser, db: DB):
     itinerary = db.get(Itinerary, itinerary_id)
     if not itinerary or not _can_view(db, itinerary, current_user.id):
         raise HTTPException(status_code=404, detail="Itinerary not found")
+    return _with_ratings(db, itinerary, current_user.id)
+
+
+@router.put("/{itinerary_id}/transfers", response_model=ItineraryOut)
+def select_transfer(
+    itinerary_id: uuid.UUID,
+    body: SelectTransferRequest,
+    current_user: CurrentUser,
+    db: DB,
+):
+    """
+    Save the chosen transport between leg `position` and leg `position + 1`
+    of a multi-destination trip. Choosing again replaces the previous pick.
+    """
+    itinerary = db.get(Itinerary, itinerary_id)
+    if not itinerary or itinerary.user_id != current_user.id:
+        raise HTTPException(status_code=404, detail="Itinerary not found")
+
+    legs = itinerary.legs
+    if body.position >= len(legs) - 1:
+        raise HTTPException(
+            status_code=422,
+            detail="No city boundary at this position",
+        )
+    from_leg, to_leg = legs[body.position], legs[body.position + 1]
+
+    transfer = (
+        db.query(ItineraryTransfer)
+        .filter(
+            ItineraryTransfer.itinerary_id == itinerary.id,
+            ItineraryTransfer.position == body.position,
+        )
+        .first()
+    )
+    if not transfer:
+        transfer = ItineraryTransfer(itinerary_id=itinerary.id, position=body.position)
+        db.add(transfer)
+
+    transfer.from_destination_id = from_leg.destination_id
+    transfer.to_destination_id = to_leg.destination_id
+    # Travel happens the day the next city starts
+    transfer.travel_date = to_leg.start_date
+    transfer.mode = body.mode
+    transfer.duration_minutes = body.duration_minutes
+    transfer.price = body.price
+    transfer.airline = body.airline
+    transfer.flight_number = body.flight_number
+    transfer.departure_time = body.departure_time
+    transfer.arrival_time = body.arrival_time
+    transfer.from_airport = body.from_airport
+    transfer.to_airport = body.to_airport
+    transfer.flight_stops = body.flight_stops
+
+    db.commit()
+    db.refresh(itinerary)
     return _with_ratings(db, itinerary, current_user.id)
 
 

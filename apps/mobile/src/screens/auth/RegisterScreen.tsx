@@ -9,9 +9,9 @@ import {
     ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
-    Alert,
     ScrollView,
 } from 'react-native';
+import { showAlert } from '../../components/ui/AppDialog';
 import { useNavigation } from '@react-navigation/native';
 import { useRegister } from '../../hooks/useAuth';
 import type { AuthScreenNavigationProp } from '../../types/navigation';
@@ -32,15 +32,15 @@ export function RegisterScreen() {
 
     async function handleRegister() {
         if (!fullName.trim() || !email.trim() || !password || !confirmPassword) {
-            Alert.alert('Missing fields', 'Please fill in all fields.');
+            showAlert('Missing fields', 'Please fill in all fields.');
             return;
         }
         if (password !== confirmPassword) {
-            Alert.alert('Password mismatch', 'Passwords do not match.');
+            showAlert('Password mismatch', 'Passwords do not match.');
             return;
         }
         if (password.length < 8) {
-            Alert.alert('Weak password', 'Password must be at least 8 characters.');
+            showAlert('Weak password', 'Password must be at least 8 characters.');
             return;
         }
         try {
@@ -50,7 +50,7 @@ export function RegisterScreen() {
                 full_name: fullName.trim(),
             });
         } catch (err) {
-            Alert.alert(
+            showAlert(
                 'Registration failed',
                 err instanceof Error ? err.message : 'Unknown error',
             );

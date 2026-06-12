@@ -40,6 +40,10 @@ export type AppStackParamList = {
     TripDetail: {
         itinerary: Itinerary;
     };
+    TransferPicker: {
+        itinerary: Itinerary;
+        position: number; // City boundary: connects leg n to leg n+1
+    };
     Chat: {
         friend: UserPublic;
     };
@@ -62,5 +66,6 @@ export type SwipeDeckRouteProp = RouteProp<AppStackParamList, 'SwipeDeck'>;
 export type ItinerarySummaryRouteProp = RouteProp<AppStackParamList, 'ItinerarySummary'>;
 export type MapViewRouteProp = RouteProp<AppStackParamList, 'MapView'>;
 export type TripDetailRouteProp = RouteProp<AppStackParamList, 'TripDetail'>;
+export type TransferPickerRouteProp = RouteProp<AppStackParamList, 'TransferPicker'>;
 export type ChatRouteProp = RouteProp<AppStackParamList, 'Chat'>;
 export type ShareTripRouteProp = RouteProp<AppStackParamList, 'ShareTrip'>;

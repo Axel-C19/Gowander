@@ -6,16 +6,19 @@ import {
     ActivityIndicator,
     ScrollView,
     TouchableOpacity,
-    Alert,
 } from 'react-native';
+import { showAlert } from '../../components/ui/AppDialog';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { ItinerarySummaryRouteProp, AppScreenNavigationProp } from '../../types/navigation';
-import { useGenerateItinerary, useSaveItinerary } from '../../hooks/useItinerary';
+import { useGenerateItinerary, useSaveItinerary, useItinerary } from '../../hooks/useItinerary';
 import { useShareTrip } from '../../hooks/useShareTrip';
 import { useSwipeStore } from '../../store/slices/swipe.slice';
 import { FONTS, SPACING, FONT_SIZE, type ThemeColors } from '../../constants';
 import { Button } from '../../components/ui/Button';
 import { ItineraryStopsList } from '../../components/itinerary/ItineraryStopsList';
+import { TransfersSection } from '../../components/itinerary/TransfersSection';
+import { openRouteInGoogleMaps } from '../../utils/googleMaps';
+import { useT } from '../../i18n';
 import type { Itinerary } from '@gowander/shared-types';
 import { formatDuration } from '@gowander/shared-utils';
 import { useThemeColors } from '../../hooks/useTheme';
@@ -28,11 +31,16 @@ export function ItinerarySummaryScreen() {
     const navigation = useNavigation<AppScreenNavigationProp>();
     const { destination, legs, startDate, endDate } = route.params;
 
+    const t = useT();
     const generateItinerary = useGenerateItinerary();
     const saveItinerary = useSaveItinerary();
     const resetSession = useSwipeStore((s) => s.resetSession);
-    const [itinerary, setItinerary] = useState<Itinerary | null>(null);
-    const { shareTrip } = useShareTrip(setItinerary);
+    const [generated, setGenerated] = useState<Itinerary | null>(null);
+    const { shareTrip } = useShareTrip(setGenerated);
+
+    // Live cache copy: picks up transfer selections made in TransferPicker
+    const { data: liveItinerary } = useItinerary(generated ? String(generated.id) : '');
+    const itinerary = liveItinerary ?? generated;
 
     useEffect(() => {
         handleGenerate();
@@ -49,10 +57,10 @@ export function ItinerarySummaryScreen() {
                 })),
                 start_time: '09:00',
             });
-            setItinerary(result);
+            setGenerated(result);
             resetSession(); // Clear swipe state after itinerary is generated
         } catch (err) {
-            Alert.alert(
+            showAlert(
                 'Could not generate itinerary',
                 err instanceof Error ? err.message : 'Please try again.',
                 [{ text: 'Go back', onPress: () => navigation.goBack() }],
@@ -64,9 +72,9 @@ export function ItinerarySummaryScreen() {
         if (!itinerary || itinerary.is_saved) return;
         try {
             const saved = await saveItinerary.mutateAsync(String(itinerary.id));
-            setItinerary(saved);
+            setGenerated(saved);
         } catch (err) {
-            Alert.alert(
+            showAlert(
                 'Could not save itinerary',
                 err instanceof Error ? err.message : 'Please try again.',
             );
@@ -103,11 +111,20 @@ export function ItinerarySummaryScreen() {
             {/* Stops, grouped by trip day */}
             <ItineraryStopsList itinerary={itinerary} />
 
+            {/* Transport between cities (multi-destination trips) */}
+            <TransfersSection itinerary={itinerary} />
+
             {/* View on map button */}
             <Button
                 title="View on map"
                 onPress={() => navigation.navigate('MapView', { itinerary })}
                 style={{ marginTop: SPACING.lg }}
+            />
+            <Button
+                title={t('openInGoogleMaps')}
+                variant="quiet"
+                onPress={() => openRouteInGoogleMaps(itinerary)}
+                style={{ marginTop: SPACING.sm }}
             />
 
             {/* Share */}

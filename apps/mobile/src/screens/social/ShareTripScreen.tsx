@@ -5,8 +5,8 @@ import {
     StyleSheet,
     FlatList,
     TouchableOpacity,
-    Alert,
 } from 'react-native';
+import { showAlert } from '../../components/ui/AppDialog';
 import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { ShareTripRouteProp, AppScreenNavigationProp } from '../../types/navigation';
@@ -31,11 +31,11 @@ export function ShareTripScreen() {
                 `Check out my trip: ${itineraryTitle}`,
                 itineraryId,
             );
-            Alert.alert('Trip shared!', `${friendName} can now view "${itineraryTitle}".`, [
+            showAlert('Trip shared!', `${friendName} can now view "${itineraryTitle}".`, [
                 { text: 'OK', onPress: () => navigation.goBack() },
             ]);
         } catch (err) {
-            Alert.alert('Could not share', err instanceof Error ? err.message : '');
+            showAlert('Could not share', err instanceof Error ? err.message : '');
         }
     }
 

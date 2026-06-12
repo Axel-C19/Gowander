@@ -30,6 +30,18 @@ class Itinerary(Base, UUIDMixin, TimestampMixin):
         cascade="all, delete-orphan",
         order_by="ItineraryStop.order",
     )
+    legs = relationship(
+        "ItineraryLeg",
+        back_populates="itinerary",
+        cascade="all, delete-orphan",
+        order_by="ItineraryLeg.position",
+    )
+    transfers = relationship(
+        "ItineraryTransfer",
+        back_populates="itinerary",
+        cascade="all, delete-orphan",
+        order_by="ItineraryTransfer.position",
+    )
 
 
 class ItineraryStop(Base, UUIDMixin, TimestampMixin):
@@ -48,6 +60,54 @@ class ItineraryStop(Base, UUIDMixin, TimestampMixin):
 
     itinerary = relationship("Itinerary", back_populates="stops")
     place = relationship("Place", back_populates="itinerary_stops")
+
+
+class ItineraryLeg(Base, UUIDMixin, TimestampMixin):
+    """One city of a multi-destination trip, with its date range."""
+    __tablename__ = "itinerary_legs"
+
+    itinerary_id = Column(UUID(as_uuid=True), ForeignKey("itineraries.id"), nullable=False, index=True)
+    destination_id = Column(UUID(as_uuid=True), ForeignKey("destinations.id"), nullable=False)
+    position = Column(Integer, nullable=False)   # 0-based order within the trip
+    start_date = Column(Date, nullable=True)
+    end_date = Column(Date, nullable=True)
+
+    itinerary = relationship("Itinerary", back_populates="legs")
+    destination = relationship("Destination")
+
+
+class ItineraryTransfer(Base, UUIDMixin, TimestampMixin):
+    """
+    The user's chosen transport between two consecutive trip legs.
+    `position` n connects leg n to leg n+1. Flight fields are NULL for
+    ground modes (train/bus/car).
+    """
+    __tablename__ = "itinerary_transfers"
+    __table_args__ = (
+        UniqueConstraint("itinerary_id", "position", name="uq_transfer_per_boundary"),
+    )
+
+    itinerary_id = Column(UUID(as_uuid=True), ForeignKey("itineraries.id"), nullable=False, index=True)
+    position = Column(Integer, nullable=False)
+    from_destination_id = Column(UUID(as_uuid=True), ForeignKey("destinations.id"), nullable=False)
+    to_destination_id = Column(UUID(as_uuid=True), ForeignKey("destinations.id"), nullable=False)
+    travel_date = Column(Date, nullable=True)
+
+    mode = Column(String(20), nullable=False)            # 'flight' | 'train' | 'bus' | 'car'
+    duration_minutes = Column(Integer, nullable=True)
+    price = Column(Float, nullable=True)                 # USD
+    # Flight-only details
+    airline = Column(String(80), nullable=True)
+    flight_number = Column(String(16), nullable=True)
+    departure_time = Column(String(5), nullable=True)    # "09:40"
+    arrival_time = Column(String(5), nullable=True)
+    from_airport = Column(String(8), nullable=True)      # IATA
+    to_airport = Column(String(8), nullable=True)
+    flight_stops = Column(Integer, default=0, nullable=False)
+
+    itinerary = relationship("Itinerary", back_populates="transfers")
+    from_destination = relationship("Destination", foreign_keys=[from_destination_id])
+    to_destination = relationship("Destination", foreign_keys=[to_destination_id])
 
 
 class ItineraryRating(Base, UUIDMixin, TimestampMixin):

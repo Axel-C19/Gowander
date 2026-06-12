@@ -5,11 +5,11 @@ import {
     StyleSheet,
     ScrollView,
     TouchableOpacity,
-    Alert,
     Image,
     TextInput,
     ActivityIndicator,
 } from 'react-native';
+import { showAlert } from '../../components/ui/AppDialog';
 import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useNavigation } from '@react-navigation/native';
@@ -65,7 +65,7 @@ export function ProfileScreen() {
     );
 
     function handleLogout() {
-        Alert.alert(t('logOut'), t('logOutConfirm'), [
+        showAlert(t('logOut'), t('logOutConfirm'), [
             { text: t('cancel'), style: 'cancel' },
             { text: t('logOut'), style: 'destructive', onPress: () => logout.mutate() },
         ]);
@@ -74,7 +74,7 @@ export function ProfileScreen() {
     async function handlePickAvatar() {
         const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (!permission.granted) {
-            Alert.alert(
+            showAlert(
                 'Permission needed',
                 'Allow photo library access to set a profile picture.',
             );
@@ -94,7 +94,7 @@ export function ProfileScreen() {
                 mimeType: asset.mimeType ?? 'image/jpeg',
             });
         } catch (err) {
-            Alert.alert(
+            showAlert(
                 'Could not update photo',
                 err instanceof Error ? err.message : 'Please try again.',
             );
@@ -111,7 +111,7 @@ export function ProfileScreen() {
             await updateProfile.mutateAsync({ bio: bioDraft.trim() });
             setEditingBio(false);
         } catch (err) {
-            Alert.alert(
+            showAlert(
                 'Could not save',
                 err instanceof Error ? err.message : 'Please try again.',
             );

@@ -105,6 +105,8 @@ export interface Itinerary {
   is_saved: boolean;
   is_public: boolean;
   stops: ItineraryStop[];
+  legs: ItineraryLeg[];
+  transfers: ItineraryTransfer[];
   created_at: string;
   updated_at: string;
   // Rating summary — populated for public trips
@@ -124,6 +126,75 @@ export interface ItineraryStop {
 }
 
 export type TravelMode = 'walking' | 'driving' | 'transit';
+
+// ─── Multi-city legs & transfers ──────────────────────────────────────────
+export interface ItineraryLeg {
+  position: number;        // 0-based order within the trip
+  destination: Destination;
+  start_date: string | null;
+  end_date: string | null;
+}
+
+export type TransferMode = 'flight' | 'train' | 'bus' | 'car';
+
+export interface ItineraryTransfer {
+  position: number;        // Connects leg n to leg n+1
+  from_destination: Destination;
+  to_destination: Destination;
+  travel_date: string | null;
+  mode: TransferMode;
+  duration_minutes: number | null;
+  price: number | null;    // USD
+  airline: string | null;
+  flight_number: string | null;
+  departure_time: string | null;
+  arrival_time: string | null;
+  from_airport: string | null;
+  to_airport: string | null;
+  flight_stops: number;
+}
+
+export interface FlightOption {
+  airline: string;
+  flight_number: string;
+  departure_time: string | null;
+  arrival_time: string | null;
+  duration_minutes: number | null;
+  price: number | null;
+  stops: number;
+  from_airport: string | null;
+  to_airport: string | null;
+}
+
+export interface GroundOption {
+  mode: 'train' | 'bus' | 'car';
+  duration_minutes: number;
+  price: number;
+}
+
+export interface TransferSearch {
+  distance_km: number;
+  recommended_mode: TransferMode;
+  from_airport: string | null;
+  to_airport: string | null;
+  flights_source: 'google_flights' | 'estimated' | 'none';
+  flights: FlightOption[];
+  ground: GroundOption[];
+}
+
+export interface SelectTransferRequest {
+  position: number;
+  mode: TransferMode;
+  duration_minutes?: number | null;
+  price?: number | null;
+  airline?: string | null;
+  flight_number?: string | null;
+  departure_time?: string | null;
+  arrival_time?: string | null;
+  from_airport?: string | null;
+  to_airport?: string | null;
+  flight_stops?: number;
+}
 
 // ─── API response wrappers ────────────────────────────────────────────────
 export interface ApiSuccess<T> {

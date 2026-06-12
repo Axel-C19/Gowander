@@ -10,6 +10,7 @@ import { SwipeDeckScreen } from '../screens/swipe/SwipeDeckScreen';
 import { ItinerarySummaryScreen } from '../screens/itinerary/ItinerarySummaryScreen';
 import { MapViewScreen } from '../screens/itinerary/MapViewScreen';
 import { TripDetailScreen } from '../screens/itinerary/TripDetailScreen';
+import { TransferPickerScreen } from '../screens/itinerary/TransferPickerScreen';
 import { ChatScreen } from '../screens/social/ChatScreen';
 import { ShareTripScreen } from '../screens/social/ShareTripScreen';
 import { FONTS } from '../constants';
@@ -87,6 +88,11 @@ export function AppStack() {
         name="TripDetail"
         component={TripDetailScreen}
         options={{ title: 'Trip details' }}
+      />
+      <Stack.Screen
+        name="TransferPicker"
+        component={TransferPickerScreen}
+        options={{ title: t('titleTransferPicker') }}
       />
       <Stack.Screen
         name="Chat"

@@ -35,6 +35,7 @@ export const ENDPOINTS = {
     PUBLISH: (id: string) => `${API_BASE}/itinerary/${id}/publish`,
     UNPUBLISH: (id: string) => `${API_BASE}/itinerary/${id}/unpublish`,
     RATE: (id: string) => `${API_BASE}/itinerary/${id}/rate`,
+    TRANSFERS: (id: string) => `${API_BASE}/itinerary/${id}/transfers`,
   },
   SOCIAL: {
     USER_SEARCH: `${API_BASE}/social/users/search`,
@@ -47,6 +48,9 @@ export const ENDPOINTS = {
     CONVERSATION: (userId: string) => `${API_BASE}/social/messages/${userId}`,
   },
   EXPLORE: `${API_BASE}/explore`,
+  FLIGHTS: {
+    SEARCH: `${API_BASE}/flights/search`,
+  },
 } as const;
 
 // ─── Navigation ───────────────────────────────────────────────────────────

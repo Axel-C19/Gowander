@@ -1,15 +1,19 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import MapView, { Marker, Polyline } from 'react-native-maps';
+import { Ionicons } from '@expo/vector-icons';
 import { useRoute } from '@react-navigation/native';
 import type { MapViewRouteProp } from '../../types/navigation';
-import { SPACING, FONT_SIZE, BORDER_RADIUS, type ThemeColors } from '../../constants';
+import { FONTS, SPACING, FONT_SIZE, BORDER_RADIUS, type ThemeColors } from '../../constants';
 import { formatTime } from '@gowander/shared-utils';
 import { useThemeColors } from '../../hooks/useTheme';
+import { openRouteInGoogleMaps } from '../../utils/googleMaps';
+import { useT } from '../../i18n';
 
 export function MapViewScreen() {
     const COLORS = useThemeColors();
     const styles = React.useMemo(() => makeStyles(COLORS), [COLORS]);
+    const t = useT();
 
   const route = useRoute<MapViewRouteProp>();
   const { itinerary } = route.params;
@@ -76,10 +80,20 @@ export function MapViewScreen() {
 
       {/* Route summary footer */}
       <View style={styles.footer}>
-        <Text style={styles.footerTitle}>{itinerary.title}</Text>
-        <Text style={styles.footerSubtitle}>
-          {itinerary.stops.length} stops · start {itinerary.start_time ? formatTime(itinerary.start_time) : '--'}
-        </Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.footerTitle}>{itinerary.title}</Text>
+          <Text style={styles.footerSubtitle}>
+            {itinerary.stops.length} stops · start {itinerary.start_time ? formatTime(itinerary.start_time) : '--'}
+          </Text>
+        </View>
+        <TouchableOpacity
+          style={styles.gmapsButton}
+          onPress={() => openRouteInGoogleMaps(itinerary)}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="navigate-outline" size={16} color="#FFFFFF" />
+          <Text style={styles.gmapsButtonText}>{t('openInGoogleMaps')}</Text>
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -117,11 +131,28 @@ const makeStyles = (COLORS: ThemeColors) => StyleSheet.create({
     backgroundColor: COLORS.surface,
     borderRadius: BORDER_RADIUS.lg,
     padding: SPACING.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: SPACING.sm,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
+  },
+  gmapsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: COLORS.secondary,
+    borderRadius: BORDER_RADIUS.full,
+    paddingHorizontal: SPACING.sm,
+    paddingVertical: SPACING.xs,
+  },
+  gmapsButtonText: {
+    fontFamily: FONTS.heavy,
+    fontSize: FONT_SIZE.xs,
+    color: '#FFFFFF',
   },
   footerTitle: {
     fontSize: FONT_SIZE.md,
