@@ -5,7 +5,9 @@ import {
     StyleSheet,
     ActivityIndicator,
     Alert,
+    TouchableOpacity,
 } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import type { AppScreenNavigationProp } from '../../types/navigation';
 import { usePlacesByDestination } from '../../hooks/usePlaces';
@@ -20,6 +22,7 @@ import { isPlaceOpenInRange } from '@gowander/shared-utils';
 import { INTERESTS } from '@gowander/shared-constants';
 import { useAuthStore } from '../../store/slices/auth.slice';
 import { useThemeColors } from '../../hooks/useTheme';
+import { useT } from '../../i18n';
 
 interface CompletedLeg {
     swipeSessionId: string;
@@ -58,15 +61,39 @@ export function SwipeDeckScreen() {
     // Without this, fast gestures produce a stale-closure race that skips cards.
     const isProcessingSwipe = useRef(false);
 
-    // Header shows which city is being swiped (and leg progress on multi-city trips)
+    const t = useT();
+
+    // Header shows which city is being swiped; back is locked, so the only
+    // way out mid-swipe is the explicit cancel-trip button.
     useEffect(() => {
         if (!destination) return;
         navigation.setOptions({
             title: legs.length > 1
                 ? `${destination.city} (${legIndex + 1}/${legs.length})`
                 : destination.city,
+            headerRight: () => (
+                <TouchableOpacity
+                    onPress={() => {
+                        Alert.alert(t('cancelTripTitle'), t('cancelTripMsg'), [
+                            { text: t('keepGoing'), style: 'cancel' },
+                            {
+                                text: t('cancelTrip'),
+                                style: 'destructive',
+                                onPress: () => {
+                                    resetSession();
+                                    resetTrip();
+                                    navigation.popToTop();
+                                },
+                            },
+                        ]);
+                    }}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                    <Ionicons name="close" size={24} color={COLORS.error} />
+                </TouchableOpacity>
+            ),
         });
-    }, [destination?.city, legIndex, legs.length]);
+    }, [destination?.city, legIndex, legs.length, COLORS]);
 
     // Reset the swipe session whenever the current leg changes
     useEffect(() => {

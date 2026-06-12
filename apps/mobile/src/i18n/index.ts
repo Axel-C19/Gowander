@@ -91,6 +91,11 @@ const en = {
   nextCityHint: 'Pick your next city below, or start swiping.',
   startSwiping: 'Start swiping',
   cancelTrip: 'Cancel trip',
+  cancelTripTitle: 'Cancel this trip?',
+  cancelTripMsg: 'Your selected cities and dates will be discarded.',
+  keepGoing: 'Keep planning',
+  addCityTitle: 'Add a city',
+  nextCityLabel: 'Pick your next city',
 };
 
 export type TranslationKey = keyof typeof en;
@@ -171,6 +176,11 @@ const es: Record<TranslationKey, string> = {
   nextCityHint: 'Elige tu siguiente ciudad abajo, o empieza a deslizar.',
   startSwiping: 'Empezar a deslizar',
   cancelTrip: 'Cancelar viaje',
+  cancelTripTitle: '¿Cancelar este viaje?',
+  cancelTripMsg: 'Se descartarán las ciudades y fechas seleccionadas.',
+  keepGoing: 'Seguir planeando',
+  addCityTitle: 'Agregar ciudad',
+  nextCityLabel: 'Elige tu siguiente ciudad',
 };
 
 const fr: Record<TranslationKey, string> = {
@@ -249,6 +259,11 @@ const fr: Record<TranslationKey, string> = {
   nextCityHint: 'Choisis ta prochaine ville ci-dessous, ou commence à swiper.',
   startSwiping: 'Commencer à swiper',
   cancelTrip: 'Annuler le voyage',
+  cancelTripTitle: 'Annuler ce voyage ?',
+  cancelTripMsg: 'Les villes et dates sélectionnées seront supprimées.',
+  keepGoing: 'Continuer',
+  addCityTitle: 'Ajouter une ville',
+  nextCityLabel: 'Choisis ta prochaine ville',
 };
 
 const de: Record<TranslationKey, string> = {
@@ -327,6 +342,11 @@ const de: Record<TranslationKey, string> = {
   nextCityHint: 'Wähle unten deine nächste Stadt oder starte das Swipen.',
   startSwiping: 'Swipen starten',
   cancelTrip: 'Reise abbrechen',
+  cancelTripTitle: 'Diese Reise abbrechen?',
+  cancelTripMsg: 'Gewählte Städte und Daten werden verworfen.',
+  keepGoing: 'Weiter planen',
+  addCityTitle: 'Stadt hinzufügen',
+  nextCityLabel: 'Wähle deine nächste Stadt',
 };
 
 const DICTIONARIES: Record<Language, Record<TranslationKey, string>> = { en, es, fr, de };

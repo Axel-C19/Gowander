@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../types/navigation';
 import { MainTabs } from './MainTabs';
 import { TripDateScreen } from '../screens/destination/TripDateScreen';
+import { AddCityScreen } from '../screens/destination/AddCityScreen';
 import { PreferencesScreen } from '../screens/profile/PreferencesScreen';
 import { useAuthStore } from '../store/slices/auth.slice';
 import { SwipeDeckScreen } from '../screens/swipe/SwipeDeckScreen';
@@ -51,14 +52,31 @@ export function AppStack() {
         options={{ title: t('titleTravelDate') }}
       />
       <Stack.Screen
+        name="AddCity"
+        component={AddCityScreen}
+        options={{
+          title: t('addCityTitle'),
+          headerBackVisible: false,
+          gestureEnabled: false,
+        }}
+      />
+      <Stack.Screen
         name="SwipeDeck"
         component={SwipeDeckScreen}
-        options={{ title: t('titlePickSpots') }}
+        options={{
+          title: t('titlePickSpots'),
+          headerBackVisible: false,
+          gestureEnabled: false,
+        }}
       />
       <Stack.Screen
         name="ItinerarySummary"
         component={ItinerarySummaryScreen}
-        options={{ title: t('titleYourItinerary') }}
+        options={{
+          title: t('titleYourItinerary'),
+          headerBackVisible: false,
+          gestureEnabled: false,
+        }}
       />
       <Stack.Screen
         name="MapView"

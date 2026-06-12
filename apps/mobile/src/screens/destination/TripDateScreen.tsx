@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useRoute, useNavigation } from '@react-navigation/native';
 import type { TripDateRouteProp, AppScreenNavigationProp } from '../../types/navigation';
 import { CalendarPicker } from '../../components/ui/CalendarPicker';
@@ -31,6 +32,37 @@ export function TripDateScreen() {
     const [endDate, setEndDate] = useState<string | null>(null);
     const legs = useTripStore((s) => s.legs);
     const addLeg = useTripStore((s) => s.addLeg);
+    const resetTrip = useTripStore((s) => s.resetTrip);
+
+    // From the second leg on, this screen is part of the locked flow:
+    // no back navigation, explicit cancel only.
+    useEffect(() => {
+        if (legs.length === 0) return;
+        navigation.setOptions({
+            headerBackVisible: false,
+            gestureEnabled: false,
+            headerRight: () => (
+                <TouchableOpacity
+                    onPress={() => {
+                        Alert.alert(t('cancelTripTitle'), t('cancelTripMsg'), [
+                            { text: t('keepGoing'), style: 'cancel' },
+                            {
+                                text: t('cancelTrip'),
+                                style: 'destructive',
+                                onPress: () => {
+                                    resetTrip();
+                                    navigation.popToTop();
+                                },
+                            },
+                        ]);
+                    }}
+                    hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                >
+                    <Ionicons name="close" size={24} color={COLORS.error} />
+                </TouchableOpacity>
+            ),
+        });
+    }, [legs.length, COLORS]);
     // A new leg can't start before the previous one ends
     const minDate = legs.length ? legs[legs.length - 1].endDate : null;
 
@@ -55,12 +87,12 @@ export function TripDateScreen() {
         Alert.alert(t('addAnotherTitle'), t('addAnotherMsg'), [
             {
                 text: t('yesAnotherCity'),
-                onPress: () => navigation.navigate('Main'),
+                onPress: () => navigation.replace('AddCity'),
             },
             {
                 text: t('buildMyTrip'),
                 style: 'cancel',
-                onPress: () => navigation.navigate('SwipeDeck'),
+                onPress: () => navigation.replace('SwipeDeck'),
             },
         ]);
     }

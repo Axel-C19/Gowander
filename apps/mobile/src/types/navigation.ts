@@ -21,6 +21,7 @@ export type AppStackParamList = {
     TripDate: {
         destination: Destination;
     };
+    AddCity: undefined;
     SwipeDeck: undefined; // Legs come from the trip store
     ItinerarySummary: {
         legs: {
